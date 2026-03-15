@@ -987,7 +987,7 @@ function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.c
 var curScreen='welcome';
 var dayLabels=['День A — Таз, поясница, ноги','День B — Шея, осанка, плечи','День C — Кор, стабилизация'];
 function goScreen(nm){
-  ['welcome','workout','library','stats'].forEach(function(s){document.getElementById(s).classList.toggle('hidden',s!==nm);});
+  ['welcome','workout','library','stats'].forEach(function(s){var el=document.getElementById(s);el.classList.toggle('hidden',s!==nm);if(s===nm)el.scrollTop=0;});
   ['nbHome','nbWorkout','nbStats','nbLibrary'].forEach(function(id,i){document.getElementById(id).classList.toggle('active',['welcome','workout','stats','library'][i]===nm);});
   document.getElementById('workoutBar').style.display=nm==='workout'?'flex':'none';
   curScreen=nm;
@@ -1221,6 +1221,7 @@ var ap={active:false,idx:0,timer:null,restTimer:null,elapsed:0,phase:'idle',wake
 var apPhaseBgs={разминка:'rgba(128,128,128,.35)',активация:'rgba(96,165,250,.4)',стабилизация:'rgba(245,158,11,.35)',укрепление:'rgba(29,158,117,.37)',растяжка:'rgba(167,139,250,.38)',баланс:'rgba(59,130,246,.37)',релиз:'rgba(5,150,105,.35)',расслабление:'rgba(5,150,105,.35)'};
 var apPhaseColors={разминка:'#888',активация:'#60a5fa',стабилизация:'#f59e0b',укрепление:'var(--green)',растяжка:'#a78bfa',баланс:'#3b82f6',релиз:'#059669',расслабление:'#059669'};
 function apVibrate(ms){try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}}
+function apScrollTop(){var el=document.getElementById('autoPlayer');if(el)el.scrollTop=0;}
 var AP_R=84,AP_C=2*Math.PI*AP_R;// ring radius and circumference
 function apRingHtml(pct,numText){
   var offset=AP_C*(1-pct);
@@ -1381,7 +1382,7 @@ function apStartTimer(){
     var el=document.getElementById('apTimer');if(el)el.textContent=rem;
     apUpdateRing(ap.elapsed/p.secs);
     if(rem<=3&&rem>0){beep(440,.08,.15);apVibrate(50);}
-    if(rem<=0){clearInterval(ap.timer);ap.timer=null;beepOk();apVibrate([100,50,100]);apCompleteSet();}
+    if(rem<=0){clearInterval(ap.timer);ap.timer=null;beepOk();apVibrate([100,50,100]);setTimeout(apCompleteSet,1000);}
   },1000);
 }
 function apPauseTimer(){clearInterval(ap.timer);ap.timer=null;ap.phase='paused';apRender();}
@@ -1393,7 +1394,7 @@ function apResumeTimer(){
     var el=document.getElementById('apTimer');if(el)el.textContent=rem;
     apUpdateRing(ap.elapsed/p.secs);
     if(rem<=3&&rem>0){beep(440,.08,.15);apVibrate(50);}
-    if(rem<=0){clearInterval(ap.timer);ap.timer=null;beepOk();apVibrate([100,50,100]);apCompleteSet();}
+    if(rem<=0){clearInterval(ap.timer);ap.timer=null;beepOk();apVibrate([100,50,100]);setTimeout(apCompleteSet,1000);}
   },1000);
 }
 function apCompleteSet(){
@@ -1422,11 +1423,11 @@ function apStartRest(){
     var el=document.getElementById('apTimer');if(el)el.textContent=ap.elapsed;
     apUpdateRing(1-ap.elapsed/restTime);
     if(ap.elapsed<=3&&ap.elapsed>0){beep(440,.05,.1);apVibrate(50);}
-    if(ap.elapsed<=0){apVibrate([100,50,100]);apSkipRest();}
+    if(ap.elapsed<=0){clearInterval(ap.restTimer);ap.restTimer=null;apVibrate([100,50,100]);setTimeout(function(){beepOk();apSkipRest();},1000);}
   },1000);
 }
 function apSkipRest(){
-  clearInterval(ap.restTimer);ap.restTimer=null;ap.phase='idle';ap.elapsed=0;beepOk();apRender();apAutoStart();
+  clearInterval(ap.restTimer);ap.restTimer=null;ap.phase='idle';ap.elapsed=0;apScrollTop();apRender();apAutoStart();
 }
 function apStartPrep(){
   var prepTime=10;ap.phase='prep';ap.elapsed=prepTime;
@@ -1439,7 +1440,7 @@ function apStartPrep(){
     if(ap.elapsed<=0){
       clearInterval(ap.restTimer);ap.restTimer=null;
       beepOk();apVibrate([80,40,80]);
-      ap.phase='idle';ap.elapsed=0;apRender();apAutoStart();
+      setTimeout(function(){ap.phase='idle';ap.elapsed=0;apScrollTop();apRender();apAutoStart();},1000);
     }
   },1000);
 }
