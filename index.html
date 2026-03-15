@@ -1247,11 +1247,30 @@ function apUpdateRing(pct){
   }
   el.style.strokeDashoffset=AP_C*(1-pct);
 }
+var _noSleepVideo=null;
 function apWakeLock(){
-  if(!navigator.wakeLock)return;
-  navigator.wakeLock.request('screen').then(function(l){ap.wakeLock=l;}).catch(function(){});
+  // Standard Wake Lock API (Android Chrome, etc.)
+  if(navigator.wakeLock){
+    navigator.wakeLock.request('screen').then(function(l){ap.wakeLock=l;}).catch(function(){});
+  }
+  // iOS fallback: silent video loop keeps screen awake
+  if(!_noSleepVideo){
+    _noSleepVideo=document.createElement('video');
+    _noSleepVideo.setAttribute('playsinline','');
+    _noSleepVideo.setAttribute('muted','');
+    _noSleepVideo.muted=true;
+    _noSleepVideo.loop=true;
+    _noSleepVideo.style.cssText='position:fixed;top:-1px;left:-1px;width:1px;height:1px;opacity:0.01;pointer-events:none;';
+    // Tiny silent mp4 (base64) — keeps iOS awake
+    _noSleepVideo.src='data:video/mp4;base64,AAAAIGZ0eXBpc29tAAACAGlzb21pc28yYXZjMW1wNDEAAAAIZnJlZQAAAu1tZGF0AAACrgYF//+q3EXpvebZSLeWLNgg2SPu73gyNjQgLSBjb3JlIDE2NCByMzEwOCBiYWVlNDAwIC0gSC4yNjQvTVBFRy00IEFWQyBjb2RlYyAtIENvcHlsZWZ0IDIwMDMtMjAyMyAtIGh0dHA6Ly93d3cudmlkZW9sYW4ub3JnL3gyNjQuaHRtbCAtIG9wdGlvbnM6IGNhYmFjPTEgcmVmPTMgZGVibG9jaz0xOjA6MCBhbmFseXNlPTB4MzoweDExMyBtZT1oZXggc3VibWU9NyBwc3k9MSBwc3lfcmQ9MS4wMDowLjAwIG1peGVkX3JlZj0xIG1lX3JhbmdlPTE2IGNocm9tYV9tZT0xIHRyZWxsaXM9MSA4eDhkY3Q9MSBjcW09MCBkZWFkem9uZT0yMSwxMSBmYXN0X3Bza2lwPTEgY2hyb21hX3FwX29mZnNldD0tMiB0aHJlYWRzPTEgbG9va2FoZWFkX3RocmVhZHM9MSBzbGljZWRfdGhyZWFkcz0wIG5yPTAgZGVjaW1hdGU9MSBpbnRlcmxhY2VkPTAgYmx1cmF5X2NvbXBhdD0wIGNvbnN0cmFpbmVkX2ludHJhPTAgYmZyYW1lcz0zIGJfcHlyYW1pZD0yIGJfYWRhcHQ9MSBiX2JpYXM9MCBkaXJlY3Q9MSB3ZWlnaHRiPTEgb3Blbl9nb3A9MCB3ZWlnaHRwPTIga2V5aW50PTI1MCBrZXlpbnRfbWluPTI1IHNjZW5lY3V0PTQwIGludHJhX3JlZnJlc2g9MCByY19sb29rYWhlYWQ9NDAgcmM9Y3JmIG1idHJlZT0xIGNyZj0yMy4wIHFjb21wPTAuNjAgcXBtaW49MCBxcG1heD02OSBxcHN0ZXA9NCBpcF9yYXRpbz0xLjQwIGFxPTE6MS4wMACAAAAAD2WIhAA3//728P4FNjuY0AAAAAhBbiFDAAfQAAAACABhiIQAN///vfgU2O5jQAAAAIEFuIUEB9AAAAAAgAYYiEADf/+9+BTY7mNAAAACBBbiFBAfQAAAAIAA==';
+    document.body.appendChild(_noSleepVideo);
+  }
+  _noSleepVideo.play().catch(function(){});
 }
-function apWakeUnlock(){if(ap.wakeLock){ap.wakeLock.release().catch(function(){});ap.wakeLock=null;}}
+function apWakeUnlock(){
+  if(ap.wakeLock){ap.wakeLock.release().catch(function(){});ap.wakeLock=null;}
+  if(_noSleepVideo){_noSleepVideo.pause();}
+}
 function apEstimate(){
   var list=apGetExercises();var sec=0;var rest=15;
   for(var i=ap.idx;i<list.length;i++){
