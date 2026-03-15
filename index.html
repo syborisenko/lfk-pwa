@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ЛФК">
+<meta name="theme-color" content="#1a1a1a">
+<link rel="manifest" href="manifest.json">
+<title>ЛФК Тренировки</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#ebebea;
+  --text:#1a1a1a;--text2:#6b6b6b;--text3:#aaa;
+  --border:rgba(0,0,0,.09);--border2:rgba(0,0,0,.16);
+  --green:#1D9E75;--gbg:#E1F5EE;--gtext:#0a5c42;
+  --amber:#d97706;--abg:#fef3c7;
+  --r:14px;--rsm:8px;--rp:99px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#141414;--bg2:#1f1f1f;--bg3:#2a2a2a;--text:#f0ede8;--text2:#888;--text3:#555;
+    --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.14);
+    --gbg:#0a2e20;--gtext:#4ecba0;--abg:#2a1f00;--sh:0 1px 3px rgba(0,0,0,.3);}
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text',sans-serif;overflow-x:hidden;}
+.screen{position:fixed;inset:0;overflow-y:auto;transition:opacity .25s,transform .25s;will-change:opacity,transform;}
+.screen.hidden{opacity:0;pointer-events:none;transform:translateY(12px);}
+
+/* NAV */
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:1px solid var(--border);display:flex;z-index:30;padding-bottom:env(safe-area-inset-bottom);}
+.nb{flex:1;padding:10px 0 8px;border:none;background:transparent;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--text3);font-size:10px;transition:color .15s;}
+.nb.active{color:var(--text);}
+.nb svg{width:22px;height:22px;}
+
+/* WELCOME */
+#welcome{padding:0 0 90px;}
+.wl-inner{max-width:480px;margin:0 auto;padding:48px 18px 20px;}
+.wl-hero{display:flex;align-items:center;gap:14px;margin-bottom:28px;}
+.wl-icon{width:56px;height:56px;background:var(--text);border-radius:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.wl-icon svg{fill:var(--bg);width:28px;height:28px;}
+.wl-title{font-size:26px;font-weight:700;color:var(--text);letter-spacing:-.5px;}
+.wl-date{font-size:13px;color:var(--text2);margin-top:2px;}
+.streak-card{background:var(--bg2);border-radius:var(--r);padding:18px;margin-bottom:12px;}
+.streak-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;}
+.streak-num{font-size:38px;font-weight:700;color:var(--text);line-height:1;}
+.streak-lbl{font-size:12px;color:var(--text2);margin-top:3px;}
+.streak-pts{font-size:26px;font-weight:700;color:var(--green);}
+.week-dots{display:flex;gap:5px;}
+.wd{flex:1;aspect-ratio:1;border-radius:6px;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:var(--text3);gap:1px;}
+.wd span{font-size:11px;font-weight:600;}
+.wd.today{background:var(--text);color:var(--bg);}
+.wd.done{background:var(--gbg);color:var(--gtext);}
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+.mstat{background:var(--bg2);border-radius:var(--rsm);padding:12px 8px;text-align:center;}
+.mstat-v{font-size:22px;font-weight:700;color:var(--text);}
+.mstat-l{font-size:11px;color:var(--text2);margin-top:2px;}
+.sec-lbl{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;}
+.day-cards{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.dc{background:var(--bg2);border-radius:var(--r);padding:15px 18px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:transform .15s;border:1.5px solid transparent;}
+.dc:active{transform:scale(.98);}
+.dc.done{border-color:var(--green);}
+.dc-name{font-size:15px;font-weight:600;color:var(--text);}
+.dc-sub{font-size:12px;color:var(--text2);margin-top:3px;}
+.dc-badge{font-size:11px;padding:3px 10px;border-radius:var(--rp);background:var(--gbg);color:var(--gtext);}
+.dc-arrow{font-size:20px;color:var(--text3);}
+.ach-row{display:flex;gap:8px;flex-wrap:wrap;}
+.ach-pill{padding:6px 14px;border-radius:var(--rp);font-size:12px;}
+
+/* WORKOUT */
+#workout{padding:0 0 160px;}
+.wk-hdr{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:13px 16px 11px;z-index:10;display:flex;align-items:center;gap:10px;}
+.back-btn{width:34px;height:34px;border-radius:50%;background:var(--bg2);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.wk-title{font-size:15px;font-weight:600;color:var(--text);flex:1;}
+.wk-pts{font-size:14px;font-weight:600;color:var(--green);}
+.dtabs{display:flex;gap:6px;padding:10px 16px 0;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;}
+.dtabs::-webkit-scrollbar{display:none;}
+.dtab{flex-shrink:0;padding:7px 16px;border-radius:var(--rp);border:1px solid var(--border2);font-size:13px;cursor:pointer;background:transparent;color:var(--text2);transition:all .15s;}
+.dtab.active{background:var(--text);color:var(--bg);border-color:transparent;}
+.dtab.done{border-color:var(--green);color:var(--gtext);}
+.ex-list{padding:10px 16px;}
+
+/* CARD */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh);transition:transform .2s;}
+.card.pop{animation:pop .35s ease;}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.018)}100%{transform:scale(1)}}
+.c-head{padding:14px 16px 0;display:flex;justify-content:space-between;align-items:flex-start;}
+.ex-name{font-size:15px;font-weight:600;color:var(--text);flex:1;margin-right:8px;line-height:1.3;}
+.role-pill{font-size:11px;padding:3px 10px;border-radius:var(--rp);background:var(--bg2);color:var(--text2);flex-shrink:0;margin-top:2px;}
+.c-meta{padding:3px 16px 10px;font-size:12px;color:var(--text2);}
+.warn{margin:0 16px 10px;padding:9px 12px;background:var(--abg);border-radius:var(--rsm);border-left:2px solid var(--amber);font-size:12px;color:var(--amber);line-height:1.5;}
+.tip-b{margin:0 16px 10px;padding:9px 12px;background:var(--bg2);border-radius:var(--rsm);border-left:2px solid var(--border2);}
+.tip-t{font-size:12px;color:var(--text2);line-height:1.55;}
+.steps-tog{display:flex;align-items:center;gap:6px;padding:0 16px 10px;cursor:pointer;user-select:none;}
+.st-lbl{font-size:12px;color:var(--green);font-weight:500;}
+.st-icon{font-size:10px;color:var(--green);transition:transform .2s;display:inline-block;}
+.st-icon.open{transform:rotate(180deg);}
+.steps-b{padding:0 16px 12px;display:none;}
+.steps-b.open{display:block;}
+.steps-ul{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.step-li{display:flex;gap:10px;align-items:flex-start;}
+.step-n{width:20px;height:20px;border-radius:50%;background:var(--text);color:var(--bg);font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-t{font-size:13px;color:var(--text);line-height:1.5;}
+.yt-a{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:7px 14px;background:#ff0000;color:#fff;border-radius:var(--rsm);font-size:12px;font-weight:500;text-decoration:none;}
+.yt-a svg{width:14px;height:14px;fill:#fff;flex-shrink:0;}
+.c-ctrl{padding:10px 16px 14px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);}
+.tbtn{padding:8px 16px;border-radius:var(--rp);border:1px solid var(--border2);font-size:13px;cursor:pointer;background:transparent;color:var(--text);transition:all .15s;flex-shrink:0;}
+.tbtn.on{background:var(--text);color:var(--bg);border-color:transparent;}
+.tdisp{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);min-width:54px;}
+.dots{display:flex;gap:7px;align-items:center;}
+.dot{width:13px;height:13px;border-radius:50%;border:1.5px solid var(--border2);cursor:pointer;transition:all .2s;flex-shrink:0;}
+.dot.filled{background:var(--text);border-color:var(--text);transform:scale(1.1);}
+.dlbl{font-size:12px;color:var(--text2);margin-left:2px;}
+.dbtn{margin-left:auto;padding:8px 18px;border-radius:var(--rp);border:1px solid var(--green);color:var(--gtext);font-size:13px;font-weight:500;cursor:pointer;background:transparent;transition:all .2s;flex-shrink:0;}
+.dbtn.ok{background:var(--green);color:#fff;border-color:var(--green);}
+.pbar{height:3px;background:var(--bg3);overflow:hidden;}
+.pfill{height:100%;background:var(--green);transition:width .5s ease;}
+.bb{position:fixed;bottom:calc(54px + env(safe-area-inset-bottom));left:0;right:0;background:var(--bg);border-top:1px solid var(--border);padding:10px 16px;display:flex;gap:8px;z-index:20;}
+.abtn{flex:1;padding:13px;border-radius:var(--rsm);border:1px solid var(--border2);font-size:14px;font-weight:500;cursor:pointer;background:transparent;color:var(--text);transition:all .15s;}
+.abtn:active{transform:scale(.97);}
+.abtn.pr{background:var(--text);color:var(--bg);border-color:transparent;}
+
+/* LIBRARY */
+#library{padding:0 0 80px;}
+.lib-hdr{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);padding:12px 16px;z-index:10;display:flex;align-items:center;gap:10px;}
+.lib-search{flex:1;padding:8px 14px;border-radius:var(--rp);border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-size:14px;outline:none;}
+.lib-search::placeholder{color:var(--text3);}
+.lib-filters{display:flex;gap:6px;padding:10px 16px;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none;}
+.lib-filters::-webkit-scrollbar{display:none;}
+.fchip{flex-shrink:0;padding:5px 14px;border-radius:var(--rp);border:1px solid var(--border2);font-size:12px;cursor:pointer;background:transparent;color:var(--text2);}
+.fchip.active{background:var(--text);color:var(--bg);border-color:transparent;}
+.lib-list{padding:0 16px;}
+.lc{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;margin-bottom:10px;box-shadow:var(--sh);cursor:pointer;}
+.lc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+.lc-name{font-size:14px;font-weight:600;color:var(--text);}
+.lc-role{font-size:11px;padding:2px 8px;border-radius:var(--rp);background:var(--bg2);color:var(--text2);}
+.lc-tip{font-size:12px;color:var(--text2);line-height:1.4;}
+.lc-steps{display:none;margin-top:10px;}
+.lc-steps.open{display:block;}
+.lc-steps-ul{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:8px;}
+
+/* TOAST */
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-8px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:var(--rp);font-size:14px;font-weight:500;z-index:999;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;white-space:nowrap;box-shadow:var(--sh);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-nav button{background:transparent;border:1px solid var(--border2);border-radius:50%;width:32px;height:32px;cursor:pointer;color:var(--text);font-size:14px;}
+.cal-month{font-size:15px;font-weight:600;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;}
+.cal-hdr{font-size:11px;color:var(--text3);padding:4px 0;}
+.cal-d{aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:13px;border-radius:50%;cursor:pointer;color:var(--text2);transition:all .15s;}
+.cal-d.other{color:var(--text3);opacity:.4;}
+.cal-d.today{border:1.5px solid var(--green);}
+.cal-d.has{background:var(--gbg);color:var(--gtext);font-weight:600;}
+.cal-d.sel{background:var(--text);color:var(--bg);}
+.cal-detail{margin-top:14px;padding:14px;background:var(--bg2);border-radius:var(--r);}
+.cal-detail-title{font-size:14px;font-weight:600;margin-bottom:4px;}
+.cal-detail-sub{font-size:12px;color:var(--text2);}
+
+/* GRAPHS */
+.sg-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+.sg-card{background:var(--bg2);border-radius:var(--rsm);padding:12px 8px;text-align:center;}
+.sg-card-v{font-size:22px;font-weight:700;}
+.sg-card-l{font-size:11px;color:var(--text2);margin-top:2px;}
+.sg-sec{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin:16px 0 10px;}
+.sg-bars{display:flex;align-items:flex-end;gap:6px;height:80px;margin-bottom:8px;}
+.sg-bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.sg-bar-fill{width:100%;border-radius:4px 4px 0 0;background:var(--gbg);transition:height .3s;}
+.sg-bar-fill.cur{background:var(--green);}
+.sg-bar-lbl{font-size:9px;color:var(--text3);}
+.sg-pie-row{display:flex;gap:14px;align-items:center;}
+.sg-pie{width:64px;height:64px;border-radius:50%;flex-shrink:0;}
+.sg-legend{font-size:12px;display:flex;flex-direction:column;gap:4px;}
+
+/* REST TIMER */
+.rest-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.rest-time{font-size:48px;font-weight:700;color:#fff;font-variant-numeric:tabular-nums;}
+.rest-lbl{font-size:14px;color:rgba(255,255,255,.7);}
+.rest-bar{width:200px;height:4px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;}
+.rest-bar-fill{height:100%;background:#fff;transition:width 1s linear;}
+.rest-skip{padding:10px 24px;border-radius:var(--rp);border:1px solid rgba(255,255,255,.3);color:#fff;background:transparent;font-size:14px;cursor:pointer;margin-top:8px;}
+/* AUTO PLAYER */
+.ap-top{display:flex;align-items:center;justify-content:space-between;width:100%;margin-bottom:4px;}
+.ap-close{width:36px;height:36px;border-radius:50%;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.ap-progress{font-size:13px;color:var(--text2);font-weight:600;}
+.ap-eta{font-size:11px;color:var(--text3);}
+.ap-eta{font-size:11px;color:var(--text3);margin-top:1px;}
+.ap-pbar{width:100%;height:3px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:24px;}
+.ap-pfill{height:100%;background:var(--green);transition:width .4s ease;}
+.ap-phase{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+.ap-name{font-size:24px;font-weight:700;text-align:center;line-height:1.2;margin-bottom:4px;}
+.ap-meta{font-size:14px;color:var(--text2);margin-bottom:16px;}
+.ap-sets{display:flex;gap:8px;margin-bottom:20px;}
+.ap-set-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border2);transition:all .2s;}
+.ap-set-dot.filled{background:var(--green);border-color:var(--green);}
+.ap-set-dot.current{border-color:var(--text);transform:scale(1.2);}
+.ap-ring-wrap{position:relative;width:180px;height:180px;margin:8px 0 16px;}
+.ap-ring-svg{width:100%;height:100%;transform:rotate(-90deg);}
+.ap-ring-track{fill:none;stroke:var(--bg3);stroke-width:6;}
+.ap-ring-fill{fill:none;stroke:var(--green);stroke-width:6;stroke-linecap:round;}
+.ap-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:64px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--text);}
+.ap-ring-lbl{font-size:14px;color:var(--text2);margin-bottom:16px;}
+.ap-reps-big{font-size:32px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.ap-tip{font-size:13px;color:var(--text2);text-align:center;line-height:1.5;max-width:320px;margin-bottom:16px;}
+.ap-nav{display:flex;gap:8px;width:100%;max-width:280px;margin-bottom:8px;}
+.ap-nav button{flex:1;}
+.ap-btn{width:100%;max-width:280px;padding:16px;border-radius:var(--r);border:none;background:var(--text);color:var(--bg);font-size:17px;font-weight:600;cursor:pointer;transition:transform .15s;}
+.ap-btn:active{transform:scale(.97);}
+.ap-btn.pulse{animation:ap-pulse 2s infinite;}
+@keyframes ap-pulse{0%,100%{box-shadow:0 0 0 0 rgba(29,158,117,.4);}50%{box-shadow:0 0 0 12px rgba(29,158,117,0);}}
+.ap-btn-sec{width:100%;max-width:280px;padding:12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:14px;cursor:pointer;}
+.ap-btn-sm{padding:12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:13px;cursor:pointer;}
+.ap-warn{font-size:12px;color:var(--amber);text-align:center;margin-top:8px;max-width:320px;line-height:1.4;}
+.ap-done-icon{width:80px;height:80px;border-radius:50%;background:var(--gbg);color:var(--gtext);font-size:36px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+.ap-how{width:100%;max-width:320px;margin-top:8px;cursor:pointer;}
+.ap-how-tog{display:flex;align-items:center;gap:6px;justify-content:center;}
+.ap-how-tog .st-icon{transition:transform .2s;font-size:10px;color:var(--green);}
+.ap-how.open .ap-how-tog .st-icon{transform:rotate(180deg);}
+.ap-how-body{display:none;margin-top:10px;text-align:left;}
+.ap-how.open .ap-how-body{display:block;}
+.ap-steps{font-size:13px;color:var(--text2);line-height:1.6;padding-left:20px;display:flex;flex-direction:column;gap:6px;}
+.ap-steps li{padding-left:4px;}
+.ap-next{width:100%;max-width:320px;margin-top:12px;padding:12px;background:var(--bg2);border-radius:var(--rsm);text-align:center;}
+.ap-next-lbl{font-size:11px;color:var(--text3);margin-bottom:4px;}
+.ap-next-name{font-size:14px;font-weight:600;color:var(--text);}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="rest-overlay" id="restOverlay" style="display:none;">
+  <div class="rest-lbl">Отдых</div>
+  <div class="rest-time" id="restTime">60</div>
+  <div class="rest-bar"><div class="rest-bar-fill" id="restBar"></div></div>
+  <button class="rest-skip" onclick="skipRest()">Пропустить</button>
+</div>
+
+<div id="autoPlayer" style="display:none;position:fixed;inset:0;z-index:60;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:20px;overflow-y:auto;">
+  <div id="apContent" style="width:100%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:12px;"></div>
+</div>
+<div id="settingsOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:50;" onclick="closeSett()"></div>
+<div id="settingsModal" style="display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-radius:16px 16px 0 0;padding:20px 16px;padding-bottom:max(20px,env(safe-area-inset-bottom));z-index:51;max-height:70vh;overflow-y:auto;box-shadow:0 -4px 30px rgba(0,0,0,.2);">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+    <div style="font-size:17px;font-weight:600;">Настройки</div>
+    <button style="background:transparent;border:none;font-size:20px;cursor:pointer;color:var(--text2);" onclick="closeSett()">&#10005;</button>
+  </div>
+  <div style="margin-bottom:18px;">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Время отдыха между подходами</div>
+    <div style="display:flex;gap:8px;" id="restBtns"></div>
+  </div>
+  <div style="margin-bottom:18px;">
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Данные</div>
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <button class="abtn" onclick="exportData()">Экспорт данных</button>
+      <button class="abtn" onclick="document.getElementById('importFile').click()">Импорт данных</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+    </div>
+  </div>
+  <div>
+    <button class="abtn" style="color:#ef4444;border-color:#ef4444;" onclick="resetData()">Сбросить прогресс</button>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nb active" id="nbHome" onclick="goScreen('welcome')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+    Главная
+  </button>
+  <button class="nb" id="nbWorkout" onclick="goScreen('workout')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+    Тренировка
+  </button>
+  <button class="nb" id="nbStats" onclick="goScreen('stats')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 5-7"/></svg>
+    Статистика
+  </button>
+  <button class="nb" id="nbLibrary" onclick="goScreen('library')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    Библиотека
+  </button>
+</div>
+
+<!-- WELCOME -->
+<div class="screen" id="welcome">
+<div class="wl-inner">
+  <div class="wl-hero">
+    <div class="wl-icon"><svg viewBox="0 0 24 24"><path d="M5 12h2l2-5 4 10 2-5h4"/></svg></div>
+    <div><div class="wl-title">ЛФК</div><div class="wl-date" id="wDate"></div></div>
+    <button style="margin-left:auto;background:var(--bg2);border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;display:flex;align-items:center;justify-content:center;" onclick="openSett()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </button>
+  </div>
+  <div id="wReminder"></div>
+  <div class="streak-card">
+    <div class="streak-row">
+      <div><div class="streak-num" id="wStr">0</div><div class="streak-lbl">дней подряд</div></div>
+      <div style="text-align:right"><div class="streak-pts" id="wPts">0</div><div style="font-size:12px;color:var(--text2)">очков</div></div>
+    </div>
+    <div class="week-dots" id="wDots"></div>
+  </div>
+  <div class="mini-stats">
+    <div class="mstat"><div class="mstat-v" id="wTot">0</div><div class="mstat-l">тренировок</div></div>
+    <div class="mstat"><div class="mstat-v" id="wWk">0/3</div><div class="mstat-l">неделя</div></div>
+    <div class="mstat"><div class="mstat-v" id="wShuf">0</div><div class="mstat-l">шафлов</div></div>
+  </div>
+  <div class="sec-lbl">Выбери день</div>
+  <div class="day-cards" id="dcards"></div>
+  <div class="sec-lbl">Достижения</div>
+  <div class="ach-row" id="wAch"></div>
+</div>
+</div>
+
+<!-- WORKOUT -->
+<div class="screen hidden" id="workout">
+  <div class="wk-hdr">
+    <button class="back-btn" onclick="goScreen('welcome')">←</button>
+    <div class="wk-title" id="wkTitle">День A</div>
+    <div class="wk-pts" id="wkPts">0 pts</div>
+  </div>
+  <div class="dtabs" id="dtabs"></div>
+  <div class="ex-list" id="exList"></div>
+  <div style="height:100px"></div>
+</div>
+
+<div class="bb" id="workoutBar" style="display:none;">
+  <button class="abtn" onclick="smartShuffle()">Перемешать</button>
+  <button class="abtn pr" onclick="openAutoPlayer()">&#9654; Старт</button>
+  <button class="abtn" onclick="finishWorkout()">Завершить</button>
+</div>
+
+<!-- LIBRARY -->
+<div class="screen hidden" id="library">
+  <div class="lib-hdr">
+    <button class="back-btn" onclick="goScreen('welcome')">←</button>
+    <input class="lib-search" id="libQ" placeholder="Поиск..." oninput="renderLib()">
+  </div>
+  <div class="lib-filters" id="libF"></div>
+  <div class="lib-list" id="libL"></div>
+  <div style="height:80px"></div>
+</div>
+
+<!-- STATS -->
+<div class="screen hidden" id="stats">
+  <div class="lib-hdr">
+    <button class="back-btn" onclick="goScreen('welcome')">←</button>
+    <div style="font-size:15px;font-weight:600;flex:1;">Статистика</div>
+  </div>
+  <div class="dtabs" id="stTabs" style="padding:10px 16px 0;">
+    <button class="dtab active" onclick="stTab('cal')">Календарь</button>
+    <button class="dtab" onclick="stTab('graphs')">Графики</button>
+  </div>
+  <div id="stCal" style="padding:16px;"></div>
+  <div id="stGraphs" style="padding:16px;display:none;"></div>
+  <div style="height:80px"></div>
+</div>
+
+<script>
+var EX=[
+  {id:"a1",role:"активация ягодиц",day:[0],name:"Ягодичный мостик",sets:3,reps:"15 повт.",secs:0,
+   tip:"Обе стороны давят одинаково — при перекосе таза одна сторона слабее",
+   steps:["Ляг на спину, колени 90°, стопы на ширине бёдер, руки вдоль тела","На выдохе напряги ягодицы и подними таз — прямая линия бедро-туловище","Задержись 2 сек наверху, чувствуй ягодицы, не поясницу","На вдохе медленно опусти таз, контролируя всё движение","Повтори 15 раз без остановки сверху вниз"],
+   warn:"Чувствуешь поясницу больше ягодиц — уменьши высоту подъёма",
+   yt:"https://www.youtube.com/results?search_query=ягодичный+мостик+техника+лфк"},
+  {id:"a2",role:"активация ягодиц",day:[0],name:"Мостик с резинкой на коленях",sets:3,reps:"15 повт.",secs:0,
+   tip:"Резинка дополнительно включает средние ягодичные — главные стабилизаторы таза",
+   steps:["Надень резинку чуть выше колен, ляг на спину в положение мостика","Разведи колени на ширину бёдер — резинка натянута","Поднимай таз, удерживая колени разведёнными против сопротивления","Наверху сожми ягодицы максимально, 2 секунды","Медленно опускай, не давай коленям заваливаться"],
+   warn:"Колени не заваливаются внутрь — это главная ошибка при резинке",
+   yt:"https://www.youtube.com/results?search_query=glute+bridge+resistance+band+tutorial"},
+  {id:"a3",role:"стабилизация таза",day:[0],name:"Мостик на одной ноге",sets:3,reps:"10 на каждую",secs:0,
+   tip:"Выравниваем 'ножки стола' — слабая сторона должна работать столько же, сколько сильная",
+   steps:["Исходное положение — как для обычного мостика","Вытяни одну ногу горизонтально, колено слегка согнуто","Подними таз на опорной ноге — он должен быть строго горизонтально","Таз не наклоняется в сторону поднятой ноги — это ключевой контроль","Все повторения на одну сторону, затем меняй"],
+   warn:"При явном перекосе таза начни с меньшей амплитудой",
+   yt:"https://www.youtube.com/results?search_query=single+leg+glute+bridge+tutorial"},
+  {id:"a4",role:"средние ягодичные",day:[0],name:"Кламшелл с резинкой",sets:3,reps:"15 на сторону",secs:0,
+   tip:"Средние ягодичные — главные стабилизаторы таза. Их слабость часто причина перекоса",
+   steps:["Ляг на бок, резинка выше колен, бёдра 45°, колени 90°","Нижняя нога на полу, голова на руке — тело как доска","Подними верхнее колено вверх как открывающаяся раковина устрицы","Таз не откатывается назад — частая ошибка. Контролируй","Медленно опусти колено, не бросай"],
+   warn:"Таз заваливается — уменьши амплитуду или убери резинку поначалу",
+   yt:"https://www.youtube.com/results?search_query=clamshell+exercise+technique"},
+  {id:"a5",role:"средние ягодичные",day:[0],name:"Боковой шаг с резинкой",sets:3,reps:"12 шагов в сторону",secs:0,
+   tip:"Функциональное упражнение — укрепляет стабилизаторы таза в вертикальном положении",
+   steps:["Резинка на щиколотках или выше колен","Лёгкий полуприсед — бёдра чуть назад, колени над носками","Шагни вправо правой, подтяни левую — резинка всегда натянута","Маленькие контролируемые шаги, не подпрыгивай","12 шагов вправо, затем 12 влево"],
+   warn:"Не выпрямляй колени полностью — держи лёгкое напряжение в ногах",
+   yt:"https://www.youtube.com/results?search_query=resistance+band+lateral+walk+glutes"},
+  {id:"a6",role:"растяжка ягодиц",day:[0],name:"Растяжка грушевидной (поза 4)",sets:3,reps:"",secs:30,
+   tip:"Грушевидная при спазме сдавливает седалищный нерв — растяжка снимает это напряжение",
+   steps:["Ляг на спину, обе ноги согнуты","Положи правую лодыжку на левое бедро — поза цифры 4","Обхвати заднюю поверхность левого бедра и подтяни к себе","Ощущение — глубокое растяжение в правой ягодице, не боль","На каждом выдохе слегка углубляй положение"],
+   yt:"https://www.youtube.com/results?search_query=piriformis+stretch+lying+figure+four"},
+  {id:"a7",role:"растяжка ягодиц",day:[0],name:"Голубь лёжа",sets:3,reps:"",secs:35,
+   tip:"Более мягкая альтернатива классической позе голубя — безопаснее для поясницы",
+   steps:["Ляг на спину, согни правое колено и отведи вправо","Правая лодыжка лежит на блоке или полу","Обхвати правое колено левой рукой, потяни к левому плечу","Ощущение — в правой ягодице и внешнем бедре","Удерживай без пружинящих движений, дыши ровно"],
+   yt:"https://www.youtube.com/results?search_query=supine+pigeon+pose+tutorial"},
+  {id:"a8",role:"релиз поясницы",day:[0],name:"Раскатка поясницы на валике",sets:1,reps:"",secs:120,
+   tip:"Миофасциальный релиз расслабляет спазмированные мышцы лучше, чем пассивная растяжка",
+   steps:["Сядь, подложи валик под поясницу, ноги согнуты","Ляг на валик, голову поддерживай руками — шею не запрокидывай","Медленно катись от крестца до нижних рёбер и обратно","Болезненная точка — остановись, дыши 5–10 секунд","Давление 6–7 из 10 — терпимое, не болевой шок"],
+   warn:"Не катай непосредственно под поясничным изгибом — только мышцы по бокам позвоночника",
+   yt:"https://www.youtube.com/results?search_query=foam+roller+lower+back+technique"},
+  {id:"a9",role:"расслабление",day:[0],name:"Поза ребёнка",sets:1,reps:"",secs:60,
+   tip:"Одновременно растягивает спину и успокаивает нервную систему — идеальный финал",
+   steps:["Встань на четвереньки, колени шире бёдер, большие пальцы касаются","Опусти ягодицы назад к пяткам, потянись руками вперёд","Лоб лежит на полу или на сложенных руках","Почувствуй как позвоночник вытягивается от копчика до затылка","Дыши медленно — живот на вдохе касается бёдер"],
+   yt:"https://www.youtube.com/results?search_query=child+pose+yoga+back+relaxation"},
+
+  {id:"b1",role:"нейтраль шеи",day:[1],name:"Втягивание подбородка (chin tuck)",sets:3,reps:"10 повт.",secs:0,
+   tip:"Корректирует 'голову черепахи' — смещение шеи вперёд, перегружающее шейный отдел",
+   steps:["Сядь или стой с прямой спиной, взгляд вперёд","Медленно втяни подбородок назад — как двойной подбородок","Затылок движется горизонтально назад, не вниз и не вверх","Лёгкое напряжение на задней поверхности шеи — правильное ощущение","Удержи 3–5 сек, вернись. 10 повторений"],
+   warn:"При головокружении — выполняй лёжа на спине без подушки",
+   yt:"https://www.youtube.com/results?search_query=chin+tuck+exercise+cervical+posture"},
+  {id:"b2",role:"нейтраль шеи",day:[1],name:"Изометрия шеи",sets:3,reps:"5 направл. × 10 сек",secs:0,
+   tip:"Тренирует глубокие мышцы шеи без нагрузки на диски — безопасно при остеохондрозе",
+   steps:["Сядь прямо, шея в нейтральном положении","Ладонь на лбу: давишь вперёд — лоб не движется, 10 сек","Ладонь сзади: давишь назад — голова держит, 10 сек","Ладонь сбоку влево/вправо: боковое давление, 10 сек каждое","Умеренное усилие — 30–40% от максимума, без боли"],
+   warn:"Не давить изо всех сил — мягкое контролируемое усилие",
+   yt:"https://www.youtube.com/results?search_query=isometric+neck+exercises+cervical+rehabilitation"},
+  {id:"b3",role:"межлопаточные",day:[1],name:"Ангелы на стене",sets:3,reps:"12 повт.",secs:0,
+   tip:"Одно из лучших упражнений для коррекции осанки — учит правильному положению лопаток",
+   steps:["Встань спиной к стене, пятки 5–10 см от стены","Прижми к стене: затылок, лопатки, поясницу, ягодицы, пятки","Согни локти 90°, прижми предплечья и кисти к стене","Медленно скользи руками вверх — как ангел расправляет крылья","Предплечье отрывается от стены — это твой предел, возвращай вниз"],
+   warn:"Не прогибайся в пояснице чтобы прижать руки — польза теряется",
+   yt:"https://www.youtube.com/results?search_query=wall+angels+exercise+posture+correction"},
+  {id:"b4",role:"межлопаточные",day:[1],name:"Сведение лопаток сидя",sets:3,reps:"15 повт., 2 сек",secs:0,
+   tip:"Укрепляет ромбовидные мышцы — они удерживают лопатки в правильном положении",
+   steps:["Сядь на край стула, спина прямая, руки вдоль тела","Согни локти 90°, предплечья смотрят вперёд","На выдохе сведи лопатки — зажми воображаемый карандаш между ними","Плечи не поднимаются — движение только лопатками назад и вниз","Удержи 2 сек максимального сведения, расслабь"],
+   yt:"https://www.youtube.com/results?search_query=scapular+retraction+rhomboids+exercise"},
+  {id:"b5",role:"тяга",day:[1],name:"Тяга резинки к поясу",sets:3,reps:"15 повт.",secs:0,
+   tip:"Укрепляет всю заднюю цепь плечевого пояса — ромбовидные, широчайшие, задние дельты",
+   steps:["Закрепи резинку на уровне пояса (дверная ручка, ножка стола)","Встань прямо, руки выпрямлены вперёд, держишь резинку","На выдохе тяни локти назад вдоль тела — как в задние карманы","Лопатки сведены в конечной точке, задержи 1 сек","Медленно вернись — не давай резинке выстреливать"],
+   warn:"Плечи опущены всё время — не пожимай ими в процессе тяги",
+   yt:"https://www.youtube.com/results?search_query=resistance+band+seated+row+posture"},
+  {id:"b6",role:"тяга",day:[1],name:"Face pull с резинкой",sets:3,reps:"15 повт.",secs:0,
+   tip:"Идеально для коррекции круглых плеч — тренирует внешние вращатели и задние дельты",
+   steps:["Резинка на уровне лица, встань на расстоянии натяжения","Возьми двумя руками, большие пальцы вверх (нейтральный хват)","Тяни к лицу, разводя руки — локти выше линии плеч","В конечной точке: локти высоко, запястья у ушей, лопатки сведены","Медленно возвращай — контролируй резинку"],
+   yt:"https://www.youtube.com/results?search_query=face+pull+exercise+resistance+band+technique"},
+  {id:"b7",role:"открытие грудного отдела",day:[1],name:"Разведение рук с резинкой",sets:3,reps:"15 повт.",secs:0,
+   tip:"Открывает грудной отдел и укрепляет заднюю поверхность плечевого пояса",
+   steps:["Возьми резинку двумя руками на ширине плеч, руки горизонтально перед собой","Резинка слегка натянута уже в исходном положении","Разводи руки в стороны, растягивая резинку до касания с грудью","Лопатки сводятся при разведении — это правильно","Медленно возвращай руки — не давай резинке схлопнуться"],
+   yt:"https://www.youtube.com/results?search_query=band+pull+apart+exercise+upper+back"},
+  {id:"b8",role:"открытие грудного отдела",day:[1],name:"Раскрытие груди на валике",sets:3,reps:"",secs:20,
+   tip:"Пассивное раскрытие грудного кифоза — 'разворачивает' сутулость",
+   steps:["Валик поперёк спины на уровне лопаток","Сядь перед ним, откинься назад — валик под средним грудным отделом","Руки за голову, поддерживай голову ладонями","Глубокий вдох — грудная клетка раскрывается, деликатный прогиб назад","Выдох — расслабляйся чуть глубже. Без резких движений"],
+   warn:"Только грудной отдел под валиком — не поясница",
+   yt:"https://www.youtube.com/results?search_query=thoracic+extension+foam+roller+posture"},
+  {id:"b9",role:"релиз грудного отдела",day:[1],name:"Раскатка грудного отдела на валике",sets:1,reps:"",secs:120,
+   tip:"Снимает зажатость грудного отдела — первопричину многих шейных проблем",
+   steps:["Сядь, подложи валик горизонтально под лопатки","Поддерживай голову руками, скрещенными за затылком","Медленно катись от нижних лопаток до верхней части спины","Болезненные точки — стоп на 10–15 сек, дыши глубоко","Не катай поясницу — только грудной отдел"],
+   warn:"Сильная боль — уменьши давление, опирайся больше на ноги",
+   yt:"https://www.youtube.com/results?search_query=thoracic+foam+roll+upper+back+mobility"},
+  {id:"b10",role:"растяжка грудных",day:[1],name:"Растяжка грудных в дверном проёме",sets:3,reps:"",secs:30,
+   tip:"Растягивает укороченные грудные мышцы — главную причину сутулости",
+   steps:["Встань в дверном проёме, согни локти 90°, упрись предплечьями в косяки","Шагни вперёд одной ногой для устойчивости","Слегка наклони тело вперёд — ощущение спереди грудной клетки","Не в плечевом суставе — в грудных мышцах","На выдохе наклоняйся чуть дальше"],
+   warn:"Боль в плечевом суставе = слишком высоко или широко руки. Опусти локти",
+   yt:"https://www.youtube.com/results?search_query=doorway+chest+stretch+pectorals"},
+  {id:"b11",role:"растяжка грудных",day:[1],name:"Растяжка на фитнес-блоках",sets:3,reps:"",secs:30,
+   tip:"Большая амплитуда раскрытия — эффективнее дверного проёма при наличии блоков",
+   steps:["Поставь два блока на ширину плеч, ляг между ними лицом вниз","Руки в стороны, предплечья на блоках, локти под прямым углом","Позволь грудной клетке 'провалиться' вниз между блоками","Голова в нейтральном положении или лоб на руках","Дыши глубоко — на вдохе грудь раскрывается"],
+   yt:"https://www.youtube.com/results?search_query=chest+stretch+yoga+blocks+pec"},
+
+  {id:"c1",role:"глубокий кор",day:[2],name:"Вакуум (поперечная мышца)",sets:5,reps:"10 сек",secs:10,
+   tip:"Поперечная мышца — 'внутренний корсет'. Слабость = нестабильность поясницы",
+   steps:["Ляг на спину, колени согнуты, стопы на полу","Сделай вдох — живот расширяется","На выдохе медленно втяни живот — 'пупок к позвоночнику', не грудную клетку","Удержи 10 секунд, продолжая дышать неглубоко","5 повторений с отдыхом 5 сек между ними"],
+   warn:"Не задерживай дыхание — мышца работает независимо от дыхания",
+   yt:"https://www.youtube.com/results?search_query=abdominal+vacuum+transverse+abdominis"},
+  {id:"c2",role:"глубокий кор",day:[2],name:"Дыхание с активацией тазового дна",sets:5,reps:"8 вдохов",secs:0,
+   tip:"Синхронизирует диафрагму и тазовое дно — фундамент стабильности всего кора",
+   steps:["Ляг на спину или сядь удобно","На вдохе: живот расширяется во все стороны, тазовое дно 'опускается'","На выдохе: живот мягко подтягивается, тазовое дно мягко 'поднимается'","Движения очень маленькие — не напрягайся сильно","8 циклов — разминка для всей системы кора"],
+   yt:"https://www.youtube.com/results?search_query=pelvic+floor+breathing+core"},
+  {id:"c3",role:"антиротация",day:[2],name:"Dead bug",sets:3,reps:"8 на сторону",secs:0,
+   tip:"Тренирует кор в антиротации — безопасно для поясницы, нет осевой нагрузки",
+   steps:["Ляг на спину, руки вертикально вверх, ноги 90° в воздухе — 'табуретка'","Прижми поясницу к полу — она остаётся прижатой всё упражнение","Медленно опусти правую руку за голову и левую ногу вперёд одновременно","Не касаясь пола — вернись. Темп: 3 сек вниз, 1 сек пауза, 3 сек вверх","Затем левая рука + правая нога"],
+   warn:"Поясница отрывается — уменьши амплитуду или делай только руки или только ноги",
+   yt:"https://www.youtube.com/results?search_query=dead+bug+exercise+core+tutorial"},
+  {id:"c4",role:"антиротация",day:[2],name:"Противоротация с резинкой",sets:3,reps:"10 на сторону",secs:0,
+   tip:"Тренирует косые мышцы живота — стабилизаторы таза при ходьбе и поворотах",
+   steps:["Резинка сбоку на уровне пупка, встань боком к точке крепления","Возьми резинку двумя руками перед собой — руки прямые на уровне пупка","Медленно поворачивай корпус от резинки, руки перед собой","Резинка тянет тебя обратно — ты сопротивляешься. 2 сек вперёд, 2 назад","Ноги и таз неподвижны — поворачивается только верхний корпус"],
+   yt:"https://www.youtube.com/results?search_query=pallof+press+anti+rotation+core"},
+  {id:"c5",role:"разгибатели + ягодицы",day:[2],name:"Bird dog",sets:3,reps:"10 на сторону",secs:0,
+   tip:"Позвоночник — мост, руки и ноги — его опоры. Мост не качается и не прогибается",
+   steps:["Четвереньки: запястья под плечами, колени под бёдрами","Спина нейтральная — естественный небольшой прогиб","На выдохе: правая рука вперёд + левая нога назад одновременно","Оба конечности горизонтально, смотришь в пол","3 сек удержание, вернись не касаясь пола. Затем левая + правая"],
+   warn:"Таз не поворачивается и не поднимается — представь стакан воды на спине",
+   yt:"https://www.youtube.com/results?search_query=bird+dog+exercise+back+stability"},
+  {id:"c6",role:"разгибатели + ягодицы",day:[2],name:"Супермен лёжа",sets:3,reps:"12 повт.",secs:0,
+   tip:"Тренирует разгибатели спины — мышцы, удерживающие нас вертикально против тяжести",
+   steps:["Ляг лицом вниз, руки вытянуты вперёд, ноги прямые","Одновременно подними руки, голову и ноги от пола","Небольшая высота подъёма — главное качество, не высота","Задержись 2–3 сек, почувствуй мышцы вдоль позвоночника","Медленно опустись, не бросай"],
+   warn:"Не запрокидывай голову сильно назад — шея продолжает позвоночник",
+   yt:"https://www.youtube.com/results?search_query=superman+exercise+erector+spinae+technique"},
+  {id:"c7",role:"фронтальная планка",day:[2],name:"Планка на локтях",sets:3,reps:"",secs:25,
+   tip:"Статическая работа кора — удерживаем мост под нагрузкой, не давая ему прогнуться",
+   steps:["Лицом вниз, локти строго под плечами, поднялся на носки","Тело — прямая доска от пяток до затылка","Взгляд в пол, шея нейтральная. Ягодицы напряжены — это ключ к защите поясницы","Дыши нормально — не задерживай дыхание","Начинаешь прогибаться или поднимать таз — закончи подход"],
+   warn:"Прогиб в пояснице = нагрузка в позвоночник, не кор. Лучше 15 сек правильно чем 60 неправильно",
+   yt:"https://www.youtube.com/results?search_query=forearm+plank+proper+form+lower+back"},
+  {id:"c8",role:"фронтальная планка",day:[2],name:"Планка с подъёмом руки",sets:3,reps:"8 на сторону",secs:0,
+   tip:"Тренирует антиротационную стабильность кора под нагрузкой",
+   steps:["Высокая планка: руки прямые, запястья под плечами","Стопы чуть шире плеч — увеличивает базу опоры","На выдохе медленно подними правую руку до горизонтали","Таз строго горизонтален — не поворачивается, не раскачивается","2 сек удержание, опусти. Затем левая рука"],
+   warn:"Таз сильно кренится — поставь ноги ещё шире или вернись к обычной планке",
+   yt:"https://www.youtube.com/results?search_query=plank+arm+lift+core+anti+rotation"},
+  {id:"c9",role:"боковой кор",day:[2],name:"Боковая планка с колена",sets:3,reps:"",secs:20,
+   tip:"Квадратная мышца поясницы — боковой стабилизатор. Слабость связана с болью в пояснице",
+   steps:["Ляг на бок, согни нижнее колено 90° — это опора","Нижний локоть строго под плечом","Поднимись — прямая линия от колена через бёдра до головы","Верхняя рука на бедре или вдоль тела","Не давай бёдрам провисать вниз — главный контроль"],
+   warn:"Боль в плечевом суставе — локоть не под плечом. Исправь позицию",
+   yt:"https://www.youtube.com/results?search_query=side+plank+knee+modification+quadratus+lumborum"},
+  {id:"c10",role:"боковой кор",day:[2],name:"Боковые наклоны с гантелью",sets:3,reps:"12 на сторону",secs:0,
+   tip:"Укрепляет квадратную мышцу поясницы — важный стабилизатор при перекосе таза",
+   steps:["Встань прямо, гантель в правой руке, левая рука на поясе","Медленно наклонись вправо — гантель скользит вдоль бедра вниз","Растяжение по левому боку — правильное ощущение","Не наклоняйся вперёд-назад — только строго в сторону","Боковые мышцы тянут тебя обратно в вертикаль"],
+   warn:"Не используй тяжёлую гантель — упражнение контролируемое, не силовое",
+   yt:"https://www.youtube.com/results?search_query=dumbbell+side+bend+lateral+core"},
+  {id:"c11",role:"финальный релиз",day:[2],name:"Раскатка позвоночника на валике",sets:1,reps:"",secs:180,
+   tip:"После тренировки мышцы тёплые — лучшее время для миофасциального релиза",
+   steps:["Сядь, валик под поясницу, откинься медленно","Катись от поясницы вверх по спине до верхних лопаток","На болезненных зонах остановись на 15–20 сек, дыши","До шеи — поддерживай голову руками","Финал: удобное положение, закрой глаза, 1 мин шавасана"],
+   yt:"https://www.youtube.com/results?search_query=full+spine+foam+roll+recovery"},
+  {id:"c12",role:"финальный релиз",day:[2],name:"Скручивание лёжа (расслабляющее)",sets:1,reps:"",secs:60,
+   tip:"Мобилизует грудной отдел и расслабляет квадратную мышцу поясницы — идеальный финал",
+   steps:["Ляг на спину, руки в стороны крестом","Подними колени 90° в воздухе — 'табуретка'","Медленно опусти оба колена вправо до пола","Голова смотрит влево — противоположно коленям","Дыши глубоко, расслабляйся 30 сек, смени сторону"],
+   warn:"Боль в пояснице — опускай колени только до комфортного положения, не до пола",
+   yt:"https://www.youtube.com/results?search_query=supine+spinal+twist+relaxation+yoga"},
+
+  // ── РАЗМИНКА / ПОДВИЖНОСТЬ ──
+  {id:"w1",role:"разминка шеи",day:[0,1,2],name:"Медленные повороты головы",sets:1,reps:"5 в каждую сторону",secs:0,
+   tip:"Запускает кровообращение в шейном отделе — делай в самом начале каждой тренировки",
+   steps:["Сядь прямо, плечи опущены, подбородок чуть втянут","Медленно поверни голову вправо до комфортного предела — без боли","Задержись 2 секунды, почувствуй лёгкое натяжение","Вернись в центр, затем влево","5 раз в каждую сторону, темп очень медленный"],
+   warn:"При головокружении — делай с открытыми глазами и уменьши амплитуду",
+   yt:"https://www.youtube.com/results?search_query=neck+rotation+warm+up+cervical"},
+  {id:"w2",role:"разминка шеи",day:[0,1,2],name:"Боковые наклоны головы",sets:1,reps:"5 в каждую сторону",secs:0,
+   tip:"Растягивает лестничные мышцы — часто спазмируют при сидячей работе",
+   steps:["Сядь прямо, правую руку положи на левое ухо — без давления","Медленно наклони голову вправо, ухо к плечу","Плечо не поднимается навстречу — только голова наклоняется","Задержись 5 секунд, почувствуй растяжение левой боковой поверхности шеи","Вернись, смени сторону"],
+   yt:"https://www.youtube.com/results?search_query=neck+lateral+flexion+stretch"},
+  {id:"w3",role:"разминка позвоночника",day:[0,1,2],name:"Кошка-корова",sets:2,reps:"10 циклов",secs:0,
+   tip:"Лучшая разминка для всего позвоночника — синхронизирует дыхание и движение",
+   steps:["Встань на четвереньки: запястья под плечами, колени под бёдрами","Вдох — прогни спину вниз, голова и копчик тянутся вверх (корова)","Выдох — округли спину вверх, голова и копчик опускаются вниз (кошка)","Движение идёт волной от копчика до затылка","Темп под дыхание — 2 сек на каждую фазу"],
+   yt:"https://www.youtube.com/results?search_query=cat+cow+stretch+spine+warm+up"},
+  {id:"w4",role:"разминка позвоночника",day:[0,1,2],name:"Вращение в грудном отделе лёжа",sets:2,reps:"8 на сторону",secs:0,
+   tip:"Открывает ротацию грудного отдела — дефицит этого движения перегружает шею и поясницу",
+   steps:["Ляг на бок, колени согнуты под 90°, руки вытянуты вперёд друг на друге","Нижнее колено зафиксировано — можно подложить под него подушку","Медленно отведи верхнюю руку назад, раскрывая грудную клетку","Взгляд следует за рукой, голова поворачивается","Задержись 3 сек, вернись. После всех повторений — смени сторону"],
+   yt:"https://www.youtube.com/results?search_query=thoracic+rotation+stretch+lying"},
+  {id:"w5",role:"разминка бёдер",day:[0,1,2],name:"Вращения в тазобедренном суставе",sets:1,reps:"8 в каждую сторону",secs:0,
+   tip:"Разогревает тазобедренный сустав и снимает утреннюю скованность",
+   steps:["Ляг на спину, согни одно колено к груди, руки поддерживают его","Рисуй большие медленные круги коленом — по часовой стрелке","8 кругов, затем 8 против часовой","Почувствуй как сустав 'раскрывается'","Смени ногу"],
+   yt:"https://www.youtube.com/results?search_query=hip+circle+mobility+warm+up"},
+  {id:"w6",role:"разминка бёдер",day:[0,1,2],name:"Динамическая растяжка сгибателей бедра",sets:2,reps:"10 на сторону",secs:0,
+   tip:"Сгибатели бедра укорочены от сидячей работы — их жёсткость тянет таз вперёд",
+   steps:["Встань в выпад: правая нога впереди, левое колено на полу","Левая рука упирается в пол или блок для устойчивости","Медленно сдвинь таз вперёд — почувствуй растяжение в левом паху","Задержись 2 секунды, вернись — 10 раз в движении","Смени ногу"],
+   yt:"https://www.youtube.com/results?search_query=hip+flexor+stretch+dynamic+lunge"},
+  {id:"w7",role:"разминка плеч",day:[0,1,2],name:"Круговые вращения плечами",sets:1,reps:"10 в каждую сторону",secs:0,
+   tip:"Разогревает плечевой сустав и верхнюю трапецию — базовая разминка перед любой нагрузкой на верх",
+   steps:["Встань прямо, руки свободно вдоль тела","Медленно подними плечи вверх к ушам","Отведи назад, опусти вниз, выведи вперёд — полный круг","10 кругов назад, затем 10 вперёд","Движение плавное, без рывков"],
+   yt:"https://www.youtube.com/results?search_query=shoulder+circles+warm+up+mobility"},
+  {id:"w8",role:"разминка позвоночника",day:[0,1,2],name:"Наклоны корпуса в стороны",sets:1,reps:"8 в каждую сторону",secs:0,
+   tip:"Мобилизация боковой цепи — квадратная мышца поясницы и межрёберные мышцы",
+   steps:["Встань прямо, ноги на ширине плеч, руки на поясе","Медленно наклонись вправо — скольжение рукой по бедру","Ощущение растяжения по левому боку","Вернись в центр, наклонись влево","8 раз в каждую сторону, плавно, без рывков"],
+   yt:"https://www.youtube.com/results?search_query=standing+side+bend+lateral+stretch+warm+up"},
+
+  // ── НОГИ И БЁДРА ──
+  {id:"l1",role:"передняя поверхность бедра",day:[0],name:"Мини-приседания у стены",sets:3,reps:"15 повт.",secs:0,
+   tip:"Безопасная версия приседания для реабилитации — стена контролирует положение колена",
+   steps:["Встань спиной к стене, стопы на 30–40 см вперёд","Медленно сползай вниз — спина скользит по стене","Опускайся до угла 90–100° в коленях — не глубже при болях","Задержись 2 секунды внизу, медленно поднимись","Колени строго над носками — не заваливаются внутрь"],
+   warn:"При болях в коленях — не опускайся ниже 90°, начни с угла 120°",
+   yt:"https://www.youtube.com/results?search_query=wall+squat+rehabilitation+technique"},
+  {id:"l2",role:"передняя поверхность бедра",day:[0],name:"Разгибание ноги в колене сидя",sets:3,reps:"12 на каждую",secs:0,
+   tip:"Изолированная работа квадрицепса — важно для стабилизации коленного сустава",
+   steps:["Сядь на стул, спина прямая, стопы на полу","Медленно вытяни правую ногу горизонтально — выпрями колено","Задержись 3 секунды — почувствуй напряжение на передней поверхности бедра","Медленно опусти — не бросай","12 повторений на каждую ногу"],
+   yt:"https://www.youtube.com/results?search_query=seated+leg+extension+quad+rehabilitation"},
+  {id:"l3",role:"задняя поверхность бедра",day:[0],name:"Сгибание ноги лёжа",sets:3,reps:"12 на каждую",secs:0,
+   tip:"Укрепляет хамстринги — часто слабее квадрицепса при болях в пояснице",
+   steps:["Ляг лицом вниз, ноги прямые, лоб на сложенных руках","Медленно согни правое колено, поднимая стопу к ягодице","Колено не отрывается от пола — только голень движется","Задержись 2 секунды, медленно опусти","12 повторений, затем смени ногу"],
+   warn:"Если тянет в колене — уменьши амплитуду сгибания",
+   yt:"https://www.youtube.com/results?search_query=prone+leg+curl+hamstring+rehab"},
+  {id:"l4",role:"задняя поверхность бедра",day:[0],name:"Наклон вперёд с гантелями (румынская тяга)",sets:3,reps:"12 повт.",secs:0,
+   tip:"Укрепляет заднюю цепь — хамстринги и разгибатели спины работают вместе",
+   steps:["Стоя, гантели в руках вдоль бёдер, ноги на ширине плеч","Лёгкий сгиб в коленях — не меняется во всём движении","Наклоняйся вперёд, опуская гантели вдоль ног — спина нейтральная","Почувствуй натяжение в задней поверхности бёдер — это дно","Медленно вернись, разгибая через ягодицы"],
+   warn:"Спина нейтральная всё время — никакого округления поясницы",
+   yt:"https://www.youtube.com/results?search_query=romanian+deadlift+dumbbell+technique"},
+  {id:"l5",role:"приводящие мышцы",day:[0],name:"Сжимание мяча/подушки между коленями",sets:3,reps:"15 повт., 3 сек",secs:0,
+   tip:"Тренирует приводящие мышцы — важны для стабилизации таза и колена",
+   steps:["Ляг на спину, колени согнуты, стопы на полу","Положи мяч или свёрнутое полотенце между коленями","Сожми коленями насколько можешь — задержи 3 секунды","Медленно расслабь, но не отпускай мяч совсем","15 сжатий — можно совмещать с ягодичным мостиком"],
+   yt:"https://www.youtube.com/results?search_query=adductor+squeeze+ball+exercise"},
+  {id:"l6",role:"растяжка бёдер",day:[0],name:"Растяжка хамстрингов лёжа с резинкой",sets:2,reps:"",secs:30,
+   tip:"Укороченные хамстринги тянут таз назад и усиливают боль в пояснице",
+   steps:["Ляг на спину, зацепи резинку за правую стопу","Вытяни правую ногу вверх, держась за концы резинки","Левая нога прямая на полу","Тяни ногу на себя до лёгкого натяжения сзади бедра — не до боли","30 секунд, дыши ровно, на выдохе чуть подтягивай"],
+   yt:"https://www.youtube.com/results?search_query=hamstring+stretch+resistance+band+lying"},
+  {id:"l7",role:"растяжка бёдер",day:[0],name:"Поза счастливого ребёнка",sets:1,reps:"",secs:60,
+   tip:"Снимает напряжение в тазобедренных суставах и крестце — отлично после нагрузки",
+   steps:["Ляг на спину, согни колени к груди","Разведи колени шире плеч, захвати руками внешние края стоп","Потяни стопы вниз, колени к подмышкам","Поясница прижата к полу, копчик опущен","Качайся мягко из стороны в сторону — массаж крестца"],
+   yt:"https://www.youtube.com/results?search_query=happy+baby+pose+hip+flexor"},
+
+  // ── ПЛЕЧИ И РУКИ ──
+  {id:"p1",role:"стабилизация плечевого сустава",day:[1],name:"Вращение плеча с резинкой (внешнее)",sets:3,reps:"15 на каждую",secs:0,
+   tip:"Укрепляет вращательную манжету — предотвращает и устраняет боли в плечевом суставе",
+   steps:["Прижми локоть правой руки к боку, угол 90°","Резинка закреплена спереди — тянет руку внутрь","Медленно поворачивай предплечье наружу от тела","Локоть остаётся прижатым к боку всё время","15 повторений, смени руку"],
+   warn:"Плечо не поднимается и не выходит вперёд — только вращение предплечья",
+   yt:"https://www.youtube.com/results?search_query=external+rotation+rotator+cuff+band"},
+  {id:"p2",role:"стабилизация плечевого сустава",day:[1],name:"Вращение плеча с резинкой (внутреннее)",sets:3,reps:"15 на каждую",secs:0,
+   tip:"Баланс между внутренними и внешними вращателями — ключ к здоровому плечу",
+   steps:["Прижми локоть правой руки к боку, угол 90°","Резинка закреплена сбоку — тянет руку наружу","Медленно поворачивай предплечье внутрь к телу","Локоть прижат к боку всё время","15 повторений, смени руку"],
+   yt:"https://www.youtube.com/results?search_query=internal+rotation+rotator+cuff+rehab"},
+  {id:"p3",role:"дельтовидные",day:[1],name:"Подъём рук в стороны с гантелями",sets:3,reps:"12 повт.",secs:0,
+   tip:"Укрепляет средние дельты — важны для стабилизации плеча при подъёме рук",
+   steps:["Стоя, гантели по бокам, локти слегка согнуты","Медленно поднимай руки в стороны до уровня плеч — не выше","Большие пальцы слегка смотрят вниз (как выливаешь стакан) — включает средние дельты","Задержись 1 секунду наверху, медленно опусти","Не раскачивайся — движение только руками"],
+   warn:"Не поднимай выше плеч при проблемах с плечевым суставом",
+   yt:"https://www.youtube.com/results?search_query=lateral+raise+dumbbell+shoulder+technique"},
+  {id:"p4",role:"дельтовидные",day:[1],name:"Подъём рук вперёд с гантелями",sets:3,reps:"12 повт.",secs:0,
+   tip:"Передние дельты помогают стабилизировать плечо при наклонах и работе за столом",
+   steps:["Стоя, гантели впереди бёдер, ладони смотрят вниз","Медленно подними правую руку вперёд до уровня плеч","Рука прямая или с лёгким сгибом в локте","Задержись 1 секунду, медленно опусти","Чередуй руки или поднимай обе одновременно"],
+   yt:"https://www.youtube.com/results?search_query=front+raise+anterior+deltoid+technique"},
+  {id:"p5",role:"трицепс",day:[1],name:"Разгибание рук с резинкой стоя",sets:3,reps:"15 повт.",secs:0,
+   tip:"Укрепляет трицепс — важен для стабильности локтевого сустава",
+   steps:["Закрепи резинку выше головы (дверная петля, перекладина)","Возьми резинку обеими руками, локти согнуты рядом с ушами","Разгибай руки вниз, выпрямляя локти — локти не двигаются вперёд","Задержись 1 секунду, медленно вернись","Корпус прямой, не качайся"],
+   yt:"https://www.youtube.com/results?search_query=tricep+pushdown+resistance+band"},
+  {id:"p6",role:"бицепс",day:[1],name:"Сгибание рук с гантелями",sets:3,reps:"12 повт.",secs:0,
+   tip:"Укрепляет бицепс и сгибатели предплечья — важны для бытовых нагрузок",
+   steps:["Стоя, гантели в руках, ладони смотрят вперёд","Медленно сгибай локти, поднимая гантели к плечам","Локти прижаты к бокам — не двигаются вперёд","Задержись 1 секунду наверху, медленно опусти","Можно чередовать руки или делать обе вместе"],
+   yt:"https://www.youtube.com/results?search_query=dumbbell+bicep+curl+proper+form"},
+  {id:"p7",role:"растяжка плеч",day:[1],name:"Растяжка плеча через грудь",sets:2,reps:"",secs:30,
+   tip:"Растягивает задние пучки дельт и капсулу плечевого сустава",
+   steps:["Стоя, вытяни правую руку горизонтально перед собой","Левой рукой обхвати правый локоть","Подтяни правую руку к левому плечу — поперёк груди","Ощущение должно быть в задней части правого плеча","30 секунд, смени руку"],
+   yt:"https://www.youtube.com/results?search_query=cross+body+shoulder+stretch"},
+  {id:"p8",role:"растяжка плеч",day:[1],name:"Растяжка трицепса за головой",sets:2,reps:"",secs:25,
+   tip:"Снимает скованность в задней поверхности плеча и трицепсе",
+   steps:["Подними правую руку вверх, согни в локте — рука за головой","Левой рукой обхвати правый локоть сверху","Мягко подталкивай локоть вниз и назад","Ощущение — по задней поверхности правого плеча и в трицепсе","25 секунд, смени руку"],
+   yt:"https://www.youtube.com/results?search_query=overhead+tricep+stretch+shoulder"},
+
+  // ── ДОПОЛНИТЕЛЬНО ДЕНЬ A ──
+  {id:"a10",role:"стабилизация таза",day:[0],name:"Разгибание ноги назад стоя",sets:3,reps:"12 на каждую",secs:0,
+   tip:"Укрепляет ягодицы и разгибатели бедра в функциональном положении стоя",
+   steps:["Встань прямо, придерживайся за стену или спинку стула","Напряги ягодицу правой ноги и медленно отведи её назад","Колено чуть согнуто, нога не уходит слишком высоко","Корпус не наклоняется вперёд — работает только бедро","Задержись 2 сек, вернись. 12 повторений, смени ногу"],
+   yt:"https://www.youtube.com/results?search_query=standing+hip+extension+glute+exercise"},
+  {id:"a11",role:"средние ягодичные",day:[0],name:"Отведение ноги стоя с резинкой",sets:3,reps:"15 на каждую",secs:0,
+   tip:"Функциональный вариант для средних ягодичных — важен для стабильности при ходьбе",
+   steps:["Резинка на щиколотках, придерживайся за стену","Стой прямо, перенеси вес на левую ногу","Медленно отведи правую ногу в сторону — нога прямая","Корпус не наклоняется в сторону движения","15 повторений, смени ногу"],
+   yt:"https://www.youtube.com/results?search_query=standing+hip+abduction+band+exercise"},
+  {id:"a12",role:"релиз поясницы",day:[0],name:"Покачивание коленями лёжа",sets:1,reps:"",secs:60,
+   tip:"Мягкая мобилизация поясничного отдела — хорошо в начале и конце тренировки",
+   steps:["Ляг на спину, колени согнуты, стопы на полу","Медленно покачивай оба колена влево-вправо как маятник","Амплитуда небольшая — без дискомфорта в пояснице","Поясница расслаблена — она пассивно следует за движением","Плечи на полу, дыши равномерно"],
+   yt:"https://www.youtube.com/results?search_query=knee+rocking+lumbar+mobilization"},
+  {id:"a13",role:"активация ягодиц",day:[0],name:"Мостик с ногами на фитболе",sets:3,reps:"12 повт.",secs:0,
+   tip:"Нестабильная опора фитбола вынуждает ягодицы и кор работать интенсивнее для удержания баланса",
+   steps:["Ляг на спину, положи обе пятки на фитбол, колени слегка согнуты","Руки вдоль тела для баланса, ладони вниз","На выдохе подними таз вверх, сжимая ягодицы — мяч не должен укатиться","Задержись 2 секунды наверху, контролируя положение мяча","Медленно опусти таз, сохраняя стопы на мяче"],
+   warn:"Мяч укатывается — начни с упора пятками ближе к центру мяча",
+   yt:"https://www.youtube.com/results?search_query=glute+bridge+stability+ball"},
+  {id:"a16",role:"активация ягодиц",day:[0],name:"Мостик с приподнятыми ногами",sets:3,reps:"15 повт.",secs:0,
+   tip:"Ноги на возвышении увеличивают амплитуду движения и нагрузку на ягодицы",
+   steps:["Ляг на спину, поставь стопы на степ-платформу, стул или ступеньку","Колени согнуты 90°, руки вдоль тела","На выдохе подними таз — линия от колен до плеч","Сожми ягодицы наверху на 2 секунды","Медленно опусти, не касаясь пола полностью"],
+   yt:"https://www.youtube.com/results?search_query=elevated+feet+glute+bridge+technique"},
+  {id:"a14",role:"средние ягодичные",day:[0],name:"Отведение бедра лёжа на боку",sets:3,reps:"15 на сторону",secs:0,
+   tip:"Базовый вариант без резинки — хорош для новичков или разогрева средних ягодичных",
+   steps:["Ляг на бок, нижнюю ногу слегка согни для устойчивости","Верхняя нога прямая, стопа параллельна полу","Медленно подними верхнюю ногу на 30–40 см","Не заваливай корпус назад — движение только ногой","Задержи 1 сек наверху, медленно опусти. Смени сторону после всех повторений"],
+   yt:"https://www.youtube.com/results?search_query=side+lying+hip+abduction+technique"},
+  {id:"a15",role:"релиз поясницы",day:[0],name:"Раскатка ягодиц на мяче",sets:1,reps:"",secs:90,
+   tip:"Точечный миофасциальный релиз глубоких ягодичных мышц — эффективнее валика для этой зоны",
+   steps:["Сядь на теннисный или массажный мяч, ноги согнуты","Перенеси вес на одну ягодицу, придерживаясь руками","Медленно катайся, находя болезненные точки","На болезненной точке остановись и дыши 15–20 секунд","Обработай обе стороны"],
+   warn:"Избегай давления на седалищную кость — только мягкие ткани",
+   yt:"https://www.youtube.com/results?search_query=glute+release+tennis+ball+piriformis"},
+  {id:"l8",role:"передняя поверхность бедра",day:[0],name:"Выпады назад",sets:3,reps:"10 на ногу",secs:0,
+   tip:"Обратные выпады безопаснее передних для коленного сустава — меньше сдвигающая нагрузка",
+   steps:["Встань прямо, руки на поясе или вдоль тела с гантелями","Шагни правой ногой назад, опуская колено к полу","Оба колена примерно 90° — переднее колено не выходит за носок","Оттолкнись задней ногой, вернись в исходное положение","Чередуй ноги или делай все повторения на одну сторону"],
+   warn:"Колено не касается пола резко — контролируй опускание",
+   yt:"https://www.youtube.com/results?search_query=reverse+lunge+technique+knee+safe"},
+  {id:"l9",role:"передняя поверхность бедра",day:[0],name:"Заход на ступеньку",sets:3,reps:"10 на ногу",secs:0,
+   tip:"Функциональное одностороннее укрепление — имитирует подъём по лестнице",
+   steps:["Встань перед устойчивой ступенькой или платформой (20–30 см)","Поставь правую ногу полностью на ступеньку","Выпрямись вверх за счёт правой ноги — левая отрывается от пола","Контролируемо опустись обратно левой ногой","Все повторения на одну ногу, затем смени"],
+   yt:"https://www.youtube.com/results?search_query=step+up+exercise+rehabilitation+quad"},
+  {id:"l10",role:"голеностоп",day:[0],name:"Подъём на носки стоя",sets:3,reps:"15 повт.",secs:0,
+   tip:"Укрепляет икроножные и камбаловидную мышцу — стабилизация голеностопа при ходьбе",
+   steps:["Встань прямо, ноги на ширине плеч, придерживайся за стену","Медленно поднимись на носки, максимально высоко","Задержись на 2 секунды наверху","Медленно опустись, контролируя движение","Для усложнения: делай на одной ноге или на краю ступеньки"],
+   yt:"https://www.youtube.com/results?search_query=calf+raise+standing+rehabilitation"},
+  {id:"l11",role:"растяжка бёдер",day:[0],name:"Растяжка квадрицепса стоя",sets:2,reps:"",secs:30,
+   tip:"Укороченный квадрицепс тянет надколенник и наклоняет таз вперёд — растяжка корректирует это",
+   steps:["Встань прямо, придерживайся за стену или стул","Согни правое колено, захвати правую стопу правой рукой сзади","Подтяни пятку к ягодице — колени вместе","Ощущение растяжения по передней поверхности бедра","30 секунд, смени ногу"],
+   warn:"Боль в колене — используй полотенце вместо захвата стопы рукой",
+   yt:"https://www.youtube.com/results?search_query=standing+quad+stretch+technique"},
+  {id:"l12",role:"растяжка бёдер",day:[0],name:"Растяжка сгибателей бедра статическая",sets:2,reps:"",secs:30,
+   tip:"Глубже и дольше чем динамическая версия — для реального удлинения укороченных тканей",
+   steps:["Встань на одно колено (выпад), переднее колено над стопой","Заднее колено на подушке или полотенце","Медленно подай таз вперёд — ощущение в передней поверхности задней ноги","Держи корпус вертикально, не наклоняйся вперёд","На каждом выдохе слегка углубляй положение"],
+   yt:"https://www.youtube.com/results?search_query=kneeling+hip+flexor+stretch+static"},
+  {id:"l13",role:"растяжка бёдер",day:[0],name:"Бабочка",sets:1,reps:"",secs:60,
+   tip:"Раскрывает тазобедренные суставы и растягивает приводящие мышцы бёдер",
+   steps:["Сядь на пол, соедини стопы подошвами друг к другу","Подтяни стопы ближе к паху — но без дискомфорта","Мягко давши коленями вниз руками или локтями","Спина прямая — не округляй","Дыши ровно, расслабляйся на каждом выдохе"],
+   yt:"https://www.youtube.com/results?search_query=butterfly+stretch+hip+adductors"},
+  {id:"l14",role:"растяжка бёдер",day:[0],name:"Растяжка IT-band лёжа",sets:2,reps:"",secs:30,
+   tip:"Подвздошно-большеберцовый тракт часто зажат при перекосе таза — растяжка снимает боковое натяжение",
+   steps:["Ляг на спину, вытяни обе ноги","Подними правую ногу и заведи её влево через тело","Левой рукой помоги, удерживая ногу","Правое плечо остаётся на полу","Ощущение по внешней стороне правого бедра — 30 сек, смени"],
+   yt:"https://www.youtube.com/results?search_query=IT+band+stretch+lying+cross+body"},
+  {id:"l15",role:"передняя поверхность бедра",day:[0],name:"Болгарский сплит-присед",sets:3,reps:"10 на ногу",secs:0,
+   tip:"Одностороннее укрепление выравнивает асимметрию между ногами — ключевое при перекосе таза",
+   steps:["Встань спиной к скамье/стулу, положи подъём задней ноги на сиденье","Передняя нога на расстоянии большого шага","Медленно опускайся вниз — переднее колено сгибается до 90°","Колено не уходит за носок — контролируй положение","Оттолкнись передней ногой вверх. Все повторения, смени ногу"],
+   warn:"При боли в колене — уменьши глубину или делай обычные выпады",
+   yt:"https://www.youtube.com/results?search_query=bulgarian+split+squat+rehabilitation"},
+  {id:"l16",role:"задняя поверхность бедра",day:[0],name:"Сгибание ног стоя с резинкой",sets:3,reps:"12 на ногу",secs:0,
+   tip:"Функциональный вариант укрепления хамстрингов стоя — ближе к реальной биомеханике ходьбы",
+   steps:["Зацепи резинку за щиколотку, второй конец закрепи внизу (ножка стола)","Встань прямо, придерживайся за стену","Медленно согни колено, поднимая пятку к ягодице","Бедро остаётся вертикальным — движение только в колене","Медленно опусти. Все повторения, смени ногу"],
+   yt:"https://www.youtube.com/results?search_query=standing+leg+curl+resistance+band"},
+
+  // ── ДОПОЛНИТЕЛЬНО ДЕНЬ B ──
+  {id:"b12",role:"нейтраль шеи",day:[1],name:"Полукруги головой",sets:2,reps:"5 в каждую сторону",secs:0,
+   tip:"Мягкая мобилизация шейного отдела — только передняя полуплоскость, без запрокидывания",
+   steps:["Сядь прямо, подбородок слегка втянут","Наклони голову к правому плечу","Медленно перекати подбородок вниз через грудь к левому плечу","Только полукруг спереди — голову назад не запрокидывай","5 раз в каждую сторону, очень медленно"],
+   warn:"Не делай полный круг головой — запрокидывание назад нагружает шейные диски",
+   yt:"https://www.youtube.com/results?search_query=neck+semicircle+mobility+cervical+safe"},
+  {id:"b13",role:"межлопаточные",day:[1],name:"Тяга резинки одной рукой",sets:3,reps:"12 на каждую",secs:0,
+   tip:"Прорабатывает асимметрию — при сколиозе одна сторона всегда слабее",
+   steps:["Резинка закреплена перед тобой, встань боком к точке крепления","Возьми резинку одной рукой, вытяни руку вперёд","Тяни локоть назад вдоль тела — лопатка идёт назад и вниз","Другая рука на поясе или придерживает корпус","12 повторений, смени руку — сравни ощущения"],
+   yt:"https://www.youtube.com/results?search_query=single+arm+row+resistance+band+posture"},
+  {id:"b14",role:"тяга",day:[1],name:"Пулловер с гантелью лёжа",sets:3,reps:"12 повт.",secs:0,
+   tip:"Растягивает и укрепляет широчайшие — важно для осанки и стабильности плеча",
+   steps:["Ляг на спину, колени согнуты, гантель двумя руками над грудью","Слегка согнутые в локтях руки медленно опускай за голову","До лёгкого натяжения в широчайших — не до боли","Медленно вернись через дугу, сохраняя сгиб в локтях","Не прогибай поясницу при движении рук за голову"],
+   warn:"При дискомфорте в плечах — уменьши амплитуду",
+   yt:"https://www.youtube.com/results?search_query=dumbbell+pullover+latissimus+technique"},
+  {id:"b15",role:"растяжка шеи",day:[1],name:"Растяжка верхней трапеции",sets:2,reps:"",secs:30,
+   tip:"Верхняя трапеция спазмирует от стресса и сидения — основной источник 'каменных плеч'",
+   steps:["Сядь прямо, правую руку заведи за спину или положи под бедро","Левой рукой мягко наклони голову влево — ухо к плечу","Ощущение по правой боковой поверхности шеи и верху трапеции","Не поднимай правое плечо — оно опущено","30 секунд, смени сторону"],
+   yt:"https://www.youtube.com/results?search_query=upper+trapezius+stretch+neck"},
+  {id:"b16",role:"растяжка шеи",day:[1],name:"Растяжка леватора лопатки",sets:2,reps:"",secs:30,
+   tip:"Леватор лопатки часто причина боли в шее сбоку — спазмирует от неправильной осанки",
+   steps:["Сядь прямо, поверни голову вправо на 45°","Правой рукой мягко наклони голову вниз — как будто смотришь в подмышку","Ощущение — в левой задне-боковой поверхности шеи","Левую руку заведи за спину для усиления","30 секунд, смени сторону"],
+   yt:"https://www.youtube.com/results?search_query=levator+scapulae+stretch+neck+pain"},
+  {id:"b17",role:"межлопаточные",day:[1],name:"Y-подъём лёжа на животе",sets:3,reps:"12 повт.",secs:0,
+   tip:"Прицельно включает нижнюю трапецию — ключевую мышцу для стабильности лопаток при подъёме рук",
+   steps:["Ляг лицом вниз, руки вытянуты вперёд под углом — буква Y","Большие пальцы смотрят вверх","Медленно подними руки от пола на 10–15 см","Сведи лопатки вниз и к центру — почувствуй нижнюю часть трапеции","Задержи 2 секунды, медленно опусти"],
+   yt:"https://www.youtube.com/results?search_query=prone+Y+raise+lower+trapezius"},
+  {id:"b18",role:"межлопаточные",day:[1],name:"T-подъём лёжа на животе",sets:3,reps:"12 повт.",secs:0,
+   tip:"Средняя трапеция и ромбовидные — мышцы, удерживающие лопатки от расхождения при сутулости",
+   steps:["Ляг лицом вниз, руки в стороны — буква T","Большие пальцы смотрят вверх","Подними руки от пола, сводя лопатки","Не запрокидывай голову — шея нейтральная","Задержи 2 секунды, медленно опусти"],
+   yt:"https://www.youtube.com/results?search_query=prone+T+raise+rhomboids+middle+trapezius"},
+  {id:"b19",role:"межлопаточные",day:[1],name:"I-подъём лёжа на животе",sets:3,reps:"12 повт.",secs:0,
+   tip:"Максимальное включение нижней трапеции — самое сложное из Y/T/I серии",
+   steps:["Ляг лицом вниз, руки вытянуты вперёд — буква I","Большие пальцы смотрят вверх","Подними руки от пола, тянись вперёд и вверх","Лопатки движутся вниз к пояснице — не к ушам","Задержи 2 секунды, медленно опусти"],
+   yt:"https://www.youtube.com/results?search_query=prone+I+raise+lower+trapezius+exercise"},
+  {id:"b20",role:"открытие грудного отдела",day:[1],name:"Wall slide",sets:3,reps:"12 повт.",secs:0,
+   tip:"Мобильность плечевого пояса — стена даёт обратную связь о качестве движения",
+   steps:["Встань спиной к стене, прижми затылок, лопатки и поясницу","Руки согнуты — локти и запястья прижаты к стене","Медленно скользи руками вверх по стене, не отрывая","Поднимай до момента когда что-то отрывается — это твой предел","Медленно вернись вниз. Контролируй контакт со стеной"],
+   yt:"https://www.youtube.com/results?search_query=wall+slide+exercise+shoulder+mobility"},
+  {id:"p9",role:"дельтовидные",day:[1],name:"Разведение рук в наклоне",sets:3,reps:"12 повт.",secs:0,
+   tip:"Прицельно укрепляет задние дельтоиды — коррекция круглых плеч и сутулости",
+   steps:["Встань, наклонись вперёд под 45°, гантели в руках свисают вниз","Слегка согнутые в локтях руки разведи в стороны","Лопатки сводятся в верхней точке","Локти выше запястий — не ниже","Медленно опусти, контролируя движение"],
+   yt:"https://www.youtube.com/results?search_query=rear+delt+fly+bent+over+dumbbell"},
+  {id:"p10",role:"грудные",day:[1],name:"Отжимания от стены",sets:3,reps:"12 повт.",secs:0,
+   tip:"Безопасная нагрузка на грудные и переднюю цепь — минимальная нагрузка на поясницу",
+   steps:["Встань лицом к стене, руки на уровне плеч, чуть шире","Шагни назад на 50–60 см — тело прямое от пяток до головы","Согни локти, приближая грудь к стене","Локти под 45° от тела — не в стороны","Оттолкнись обратно, выпрямляя руки"],
+   yt:"https://www.youtube.com/results?search_query=wall+pushup+beginner+chest+exercise"},
+  {id:"p11",role:"открытие грудного отдела",day:[1],name:"Протяжка резинки за спиной",sets:3,reps:"10 повт.",secs:0,
+   tip:"Улучшает мобильность плечевого сустава во всех плоскостях — профилактика импинджмента",
+   steps:["Возьми резинку или палку широким хватом перед собой","Медленно подними руки вверх и за голову, до поясницы за спиной","Руки прямые всё время — хват должен быть достаточно широким","Медленно верни обратно по той же дуге","Если не проходит — возьми шире"],
+   warn:"Боль в плече — бери более широкий хват или используй полотенце",
+   yt:"https://www.youtube.com/results?search_query=band+pass+through+shoulder+mobility"},
+  {id:"p12",role:"верхняя трапеция",day:[1],name:"Шраги с гантелями",sets:3,reps:"15 повт.",secs:0,
+   tip:"Укрепляет верхнюю трапецию — стабилизация шейно-плечевого перехода",
+   steps:["Встань прямо, гантели в опущенных руках","Медленно подними плечи вверх к ушам","Задержи 2 секунды в верхней точке","Медленно опусти — контролируй эксцентрическую фазу","Не вращай плечами — только вверх-вниз"],
+   yt:"https://www.youtube.com/results?search_query=dumbbell+shrugs+upper+trapezius"},
+  {id:"p13",role:"предплечья",day:[1],name:"Пронация/супинация предплечья",sets:3,reps:"12 на сторону",secs:0,
+   tip:"Стабилизация локтевого сустава и профилактика эпикондилита (теннисного локтя)",
+   steps:["Сядь, положи предплечье на бедро, рука свисает за колено","Возьми гантель за один конец (молотковый хват)","Медленно поверни предплечье ладонью вниз (пронация)","Затем ладонью вверх (супинация)","12 поворотов = 1 подход. Смени руку"],
+   yt:"https://www.youtube.com/results?search_query=forearm+pronation+supination+exercise"},
+  {id:"p14",role:"предплечья",day:[1],name:"Сгибание запястья с гантелью",sets:3,reps:"15 повт.",secs:0,
+   tip:"Укрепляет сгибатели предплечья — профилактика туннельного синдрома при работе за компьютером",
+   steps:["Сядь, положи предплечье на бедро ладонью вверх, кисть свисает","Гантель в руке — медленно согни запястье вверх","Задержи 1 секунду в верхней точке","Медленно опусти — полная амплитуда","Лёгкий вес, высокие повторения"],
+   yt:"https://www.youtube.com/results?search_query=wrist+curl+forearm+exercise"},
+  {id:"p15",role:"предплечья",day:[1],name:"Разгибание запястья с гантелью",sets:3,reps:"15 повт.",secs:0,
+   tip:"Баланс между сгибателями и разгибателями предплечья — предотвращает дисбаланс",
+   steps:["Сядь, положи предплечье на бедро ладонью вниз, кисть свисает","Гантель в руке — медленно разогни запястье вверх","Задержи 1 секунду в верхней точке","Медленно опусти","Используй меньший вес чем для сгибаний — разгибатели слабее"],
+   yt:"https://www.youtube.com/results?search_query=reverse+wrist+curl+forearm+extensor"},
+  {id:"b21",role:"релиз грудного отдела",day:[1],name:"Раскатка верхней трапеции на мяче",sets:1,reps:"",secs:90,
+   tip:"Точечный миофасциальный релиз трапеции — эффективнее валика для этой зоны",
+   steps:["Встань спиной к стене, положи теннисный мяч между стеной и верхней трапецией","Слегка присядь и поднимись — мяч катится по мышце","Найди болезненную точку — остановись, дыши 15–20 секунд","Обработай обе стороны","Давление умеренное — не через боль"],
+   yt:"https://www.youtube.com/results?search_query=upper+trapezius+release+tennis+ball+wall"},
+
+  // ── ДОПОЛНИТЕЛЬНО ДЕНЬ C ──
+  {id:"c13",role:"глубокий кор",day:[2],name:"Подъём ног лёжа (согнутые)",sets:3,reps:"10 повт.",secs:0,
+   tip:"Укрепляет нижний кор — важен для стабилизации таза при ходьбе",
+   steps:["Ляг на спину, поясница прижата к полу","Согни колени под 90° и подними ноги — 'табуретка' в воздухе","Медленно опусти одну ногу, стопа почти касается пола","Вернись наверх. Поясница всё время прижата — это условие","Чередуй ноги — 10 раз каждой"],
+   warn:"Поясница отрывается от пола — это слишком тяжело сейчас. Делай с одной ногой, другая остаётся согнутой на полу",
+   yt:"https://www.youtube.com/results?search_query=leg+lowering+lower+abs+core"},
+  {id:"c14",role:"антиротация",day:[2],name:"Mountain climber медленный",sets:3,reps:"8 на сторону",secs:0,
+   tip:"Динамическая антиротация в нагруженном положении — сложнее dead bug",
+   steps:["Встань в высокую планку: руки прямые, запястья под плечами","Медленно подтяни правое колено к груди — 3 секунды","Корпус не качается, таз не поднимается","Медленно вернись, затем левое колено","Дыши равномерно — не задерживай на усилии"],
+   warn:"Если трясутся руки или кренится таз — вернись к bird dog",
+   yt:"https://www.youtube.com/results?search_query=slow+mountain+climber+core+stability"},
+  {id:"c15",role:"разгибатели + ягодицы",day:[2],name:"Ягодичный мостик с шагами",sets:3,reps:"10 шагов",secs:0,
+   tip:"Марш в мостике — динамическая стабилизация таза, сложнее статического мостика",
+   steps:["Подними таз в позицию мостика, зафиксируй","Медленно подними правую стопу на 5 см от пола","Таз горизонтален — не проваливается в сторону поднятой ноги","Опусти, подними левую стопу. Это один шаг","10 шагов, не опуская таз"],
+   yt:"https://www.youtube.com/results?search_query=glute+bridge+march+hip+stability"},
+  {id:"c16",role:"фронтальная планка",day:[2],name:"Планка с касанием плеча",sets:3,reps:"8 на сторону",secs:0,
+   tip:"Антиротация в высокой планке — тренирует стабилизацию при переносе веса",
+   steps:["Высокая планка, стопы чуть шире плеч","Медленно подними правую руку и коснись левого плеча","Таз не крутится и не раскачивается — это главный контроль","Верни руку. Затем левая рука — правое плечо","Медленный контролируемый темп — 3 сек на касание"],
+   yt:"https://www.youtube.com/results?search_query=plank+shoulder+tap+anti+rotation"},
+  {id:"c17",role:"боковой кор",day:[2],name:"Боковая планка с отведением ноги",sets:3,reps:"8 на сторону",secs:0,
+   tip:"Одновременно тренирует боковой кор и средние ягодичные — двойная польза",
+   steps:["Встань в боковую планку — на локте или на прямой руке","Удержи стабильное положение таза","Медленно подними верхнюю ногу на 20–30 см","Задержи 2 секунды — почувствуй работу ягодицы и бока","Медленно опусти. 8 повторений, смени сторону"],
+   yt:"https://www.youtube.com/results?search_query=side+plank+leg+raise+hip+abduction"},
+  {id:"c18",role:"фронтальная планка",day:[2],name:"Hollow body hold",sets:3,reps:"",secs:15,
+   tip:"Статическая нагрузка на прямую мышцу живота — учит 'закрывать' рёбра и стабилизировать таз",
+   steps:["Ляг на спину, руки вдоль тела","Прижми поясницу к полу — это ключевое условие","Оторви голову, плечи и ноги от пола на 10–15 см","Тело — форма банана. Поясница прижата!","Дыши неглубоко, удерживай позицию"],
+   warn:"Поясница отрывается — согни колени или подними ноги выше",
+   yt:"https://www.youtube.com/results?search_query=hollow+body+hold+core+exercise"},
+  {id:"c19",role:"антиротация",day:[2],name:"Dead bug с мячом",sets:3,reps:"8 на сторону",secs:0,
+   tip:"Мяч между рукой и коленом создаёт изометрическое сжатие — усиливает активацию глубокого кора",
+   steps:["Ляг на спину, руки вверх, ноги 90° — позиция 'табуретка'","Помести мяч между правой ладонью и левым коленом","Сжимай мяч — это активирует кор","Медленно вытяни левую руку и правую ногу, продолжая сжимать мяч","Вернись, переставь мяч на другую диагональ"],
+   yt:"https://www.youtube.com/results?search_query=dead+bug+ball+squeeze+core"},
+  {id:"c20",role:"антиротация",day:[2],name:"Pallof press",sets:3,reps:"10 на сторону",secs:0,
+   tip:"Жим от груди против бокового сопротивления — тренирует антиротационную стабильность",
+   steps:["Закрепи резинку сбоку на уровне груди, встань боком","Держи резинку обеими руками у груди","Медленно вытяни руки вперёд — резинка тянет повернуться, сопротивляйся","Задержи 2 секунды с вытянутыми руками","Верни к груди. 10 раз, смени сторону"],
+   yt:"https://www.youtube.com/results?search_query=pallof+press+anti+rotation+core"},
+  {id:"c21",role:"разгибатели + ягодицы",day:[2],name:"Обратная планка",sets:3,reps:"",secs:20,
+   tip:"Укрепляет всю заднюю цепь и раскрывает грудную клетку — антидот для сидячей позы",
+   steps:["Сядь на пол, ноги вперёд, руки за спиной, пальцы к стопам","Подними таз — прямая линия от плеч до стоп","Не запрокидывай голову — взгляд в потолок или вперёд","Сожми ягодицы, раскрой грудь","Удерживай 20 секунд, дыши ровно"],
+   warn:"Боль в запястьях — поставь кулаки или используй параллельные брусья/блоки",
+   yt:"https://www.youtube.com/results?search_query=reverse+plank+posterior+chain"},
+  {id:"c22",role:"боковой кор",day:[2],name:"Hip dip в боковой планке",sets:3,reps:"10 на сторону",secs:0,
+   tip:"Динамическая работа квадратной мышцы поясницы — эффективнее статического удержания",
+   steps:["Встань в боковую планку на локте","Медленно опусти бёдра к полу — не касаясь","Подними обратно чуть выше горизонтали","Контролируй движение — без рывков","10 повторений, смени сторону"],
+   yt:"https://www.youtube.com/results?search_query=side+plank+hip+dip+obliques"},
+  {id:"c23",role:"баланс",day:[2],name:"Стабилизация на одной ноге",sets:3,reps:"",secs:30,
+   tip:"Проприоцепция — способность чувствовать положение тела. Тренируется стоя на одной ноге",
+   steps:["Встань прямо, перенеси вес на правую ногу","Подними левую стопу от пола на 10 см","Руки свободно для баланса, взгляд на точку впереди","Удерживай 30 секунд, стараясь не касаться пола","Смени ногу. Усложнение: закрой глаза"],
+   yt:"https://www.youtube.com/results?search_query=single+leg+balance+proprioception+exercise"},
+  {id:"c24",role:"глубокий кор",day:[2],name:"Медвежья походка",sets:3,reps:"10 шагов",secs:0,
+   tip:"Координация всего тела + нагрузка на кор в движении — одно из лучших функциональных упражнений",
+   steps:["Встань на четвереньки: руки под плечами, колени под бёдрами","Оторви колени от пола на 3–5 см — удержи","Медленно шагни вперёд правой рукой и левой ногой","Затем левой рукой и правой ногой","Спина ровная, таз не раскачивается. 10 шагов вперёд"],
+   warn:"Таз раскачивается — уменьши шаг и замедлись",
+   yt:"https://www.youtube.com/results?search_query=bear+crawl+exercise+core+stability"},
+  {id:"c25",role:"антиротация",day:[2],name:"Скалолаз с разворотом",sets:3,reps:"8 на сторону",secs:0,
+   tip:"Ротация под нагрузкой — тренирует косые мышцы в функциональном паттерне",
+   steps:["Высокая планка — руки прямые под плечами","Медленно подтяни правое колено к левому локтю — через тело","Корпус минимально поворачивается, работают косые мышцы","Вернись. Затем левое колено к правому локтю","Медленный темп — 3 секунды на каждое подтягивание"],
+   yt:"https://www.youtube.com/results?search_query=cross+body+mountain+climber+obliques"},
+  {id:"c26",role:"фронтальная планка",day:[2],name:"Планка с ходьбой рук",sets:3,reps:"8 повт.",secs:0,
+   tip:"Переход между высокой и низкой планкой — динамическая нагрузка на руки и кор",
+   steps:["Начни в планке на локтях","Поставь правую ладонь, затем левую — выпрямись в высокую планку","Опустись обратно: правый локоть, затем левый","Это 1 повторение. Чередуй ведущую руку","Таз не раскачивается — стопы чуть шире для стабильности"],
+   yt:"https://www.youtube.com/results?search_query=plank+walk+up+down+exercise"},
+  {id:"c27",role:"глубокий кор",day:[2],name:"Ножницы лёжа",sets:3,reps:"12 повт.",secs:0,
+   tip:"Динамическая работа нижнего пресса — поясница прижата к полу всё время",
+   steps:["Ляг на спину, руки под ягодицами или вдоль тела","Подними обе ноги на 20–30 см от пола","Поочерёдно опускай и поднимай ноги — ножницы","Поясница прижата к полу — это обязательное условие","12 перекрёстных движений = 1 подход"],
+   warn:"Поясница отрывается — подними ноги выше или согни колени",
+   yt:"https://www.youtube.com/results?search_query=scissor+kicks+lower+abs+exercise"},
+  {id:"c28",role:"антиротация",day:[2],name:"Велосипед лёжа",sets:3,reps:"12 на сторону",secs:0,
+   tip:"Косые мышцы живота + координация — классическое упражнение для ротационной стабильности",
+   steps:["Ляг на спину, руки за головой, ноги подняты — колени 90°","Подтяни правое колено к груди, одновременно разверни левое плечо к нему","Выпрями правую ногу, подтяни левое колено — разверни правое плечо","Чередуй стороны — медленный контролируемый темп","Не тяни шею руками — руки только поддерживают голову"],
+   warn:"Боль в шее — опусти голову на пол и делай только ногами",
+   yt:"https://www.youtube.com/results?search_query=bicycle+crunch+proper+form+core"}
+];
+
+var SLOTS=[
+  [
+    {role:"разминка бёдер",ids:["w5","w6"],phase:"разминка"},
+    {role:"разминка позвоночника",ids:["w3"],phase:"разминка"},
+    {role:"активация ягодиц",ids:["a1","a2","a13","a16"],phase:"активация"},
+    {role:"стабилизация таза",ids:["a3","a10"],phase:"стабилизация"},
+    {role:"средние ягодичные",ids:["a4","a5","a11","a14"],phase:"стабилизация"},
+    {role:"передняя поверхность бедра",ids:["l1","l2","l8","l9","l15"],phase:"укрепление"},
+    {role:"задняя поверхность бедра",ids:["l3","l4","l16"],phase:"укрепление"},
+    {role:"приводящие / голеностоп",ids:["l5","l10"],phase:"укрепление"},
+    {role:"растяжка ягодиц",ids:["a6","a7"],phase:"растяжка"},
+    {role:"растяжка бёдер",ids:["l6","l7","l11","l12","l13","l14"],phase:"растяжка"},
+    {role:"релиз поясницы",ids:["a8","a12","a15"],phase:"релиз"},
+    {role:"расслабление",ids:["a9"],phase:"расслабление"}
+  ],
+  [
+    {role:"разминка шеи",ids:["w1","w2"],phase:"разминка"},
+    {role:"разминка грудного",ids:["w4","w7"],phase:"разминка"},
+    {role:"нейтраль шеи",ids:["b1","b2","b12"],phase:"активация"},
+    {role:"межлопаточные",ids:["b3","b4","b13","b17","b18","b19"],phase:"стабилизация"},
+    {role:"стабилизация плечевого сустава",ids:["p1","p2"],phase:"стабилизация"},
+    {role:"тяга",ids:["b5","b6","b14"],phase:"укрепление"},
+    {role:"грудные",ids:["p10"],phase:"укрепление"},
+    {role:"дельтовидные",ids:["p3","p4","p9"],phase:"укрепление"},
+    {role:"верхняя трапеция",ids:["p12"],phase:"укрепление"},
+    {role:"бицепс/трицепс",ids:["p5","p6"],phase:"укрепление"},
+    {role:"предплечья",ids:["p13","p14","p15"],phase:"укрепление"},
+    {role:"открытие грудного отдела",ids:["b7","b8","b20","p11"],phase:"растяжка"},
+    {role:"растяжка грудных",ids:["b10","b11"],phase:"растяжка"},
+    {role:"растяжка плеч",ids:["p7","p8"],phase:"растяжка"},
+    {role:"растяжка шеи",ids:["b15","b16"],phase:"растяжка"},
+    {role:"релиз грудного отдела",ids:["b9","b21"],phase:"релиз"}
+  ],
+  [
+    {role:"разминка позвоночника",ids:["w3","w4","w8"],phase:"разминка"},
+    {role:"разминка бёдер",ids:["w5","w6"],phase:"разминка"},
+    {role:"глубокий кор",ids:["c1","c2"],phase:"активация"},
+    {role:"антиротация лёжа",ids:["c3","c19","c28"],phase:"стабилизация"},
+    {role:"антиротация стоя/нагруж.",ids:["c4","c14","c20","c25"],phase:"стабилизация"},
+    {role:"разгибатели + ягодицы",ids:["c5","c6","c15","c21"],phase:"укрепление"},
+    {role:"фронтальная планка",ids:["c7","c8","c16","c18","c26"],phase:"укрепление"},
+    {role:"глубокий кор динамика",ids:["c13","c24","c27"],phase:"укрепление"},
+    {role:"боковой кор",ids:["c9","c10","c17","c22"],phase:"укрепление"},
+    {role:"баланс",ids:["c23"],phase:"баланс"},
+    {role:"финальный релиз",ids:["c11","c12"],phase:"релиз"}
+  ]
+];
+var ACHS=[
+  {id:"a1",label:"Первый шаг",check:function(s){return s.total>=1;}},
+  {id:"a2",label:"Неделя 3/3",check:function(s){return s.weekCount>=3;}},
+  {id:"a3",label:"3 подряд",check:function(s){return s.streak>=3;}},
+  {id:"a4",label:"Полный круг",check:function(s){return s.doneTypes.length>=3;}},
+  {id:"a5",label:"100 очков",check:function(s){return s.points>=100;}},
+  {id:"a6",label:"Разнообразие",check:function(s){return s.shuffles>=3;}}
+];
+
+// STATE
+function loadSt(){
+  var raw;
+  try{raw=localStorage.getItem('lfk_v6');}catch(e){}
+  if(raw){try{return JSON.parse(raw);}catch(e){}}
+  // migrate from v5/v4
+  var old;
+  try{var s=localStorage.getItem('lfk_v5')||localStorage.getItem('lfk_v4');if(s)old=JSON.parse(s);}catch(e){}
+  if(old) return migrateV5(old);
+  return freshState();
+}
+function freshState(){
+  return{points:0,total:0,streak:0,weekCount:0,doneTypes:[],completedDays:{},exerciseSets:{},
+    trainedDays:[],shuffles:0,selIds:[null,null,null],lastDate:null,
+    history:[],customParams:{},paramHistory:{},exCompletions:{},disabledExercises:[],
+    progressionDismissed:{},restTime:60,lastReminder:null,maxStreak:0,version:6,migrationDate:new Date().toISOString()};
+}
+function migrateV5(old){
+  var s=freshState();
+  // copy existing fields
+  ['points','total','streak','weekCount','doneTypes','completedDays','exerciseSets',
+   'trainedDays','shuffles','selIds','lastDate'].forEach(function(k){if(old[k]!==undefined)s[k]=old[k];});
+  // backfill history from completedDays
+  if(old.completedDays){
+    Object.keys(old.completedDays).forEach(function(dateStr){
+      s.history.push({date:dateStr,dayType:old.completedDays[dateStr],points:0,exerciseCount:0,duration:0});
+    });
+    s.history.sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  }
+  s.maxStreak=old.streak||0;
+  s.migrationDate=new Date().toISOString();
+  return s;
+}
+function saveSt(){try{localStorage.setItem('lfk_v6',JSON.stringify(st));}catch(e){}}
+var st=loadSt();
+if(!st.selIds)st.selIds=[null,null,null];
+if(!st.history)st.history=[];
+if(!st.exCompletions)st.exCompletions={};
+if(!st.disabledExercises)st.disabledExercises=[];
+if(!st.customParams)st.customParams={};
+if(!st.paramHistory)st.paramHistory={};
+if(!st.progressionDismissed)st.progressionDismissed={};
+if(st.maxStreak===undefined)st.maxStreak=0;
+// Rebuild selIds if slot count changed (e.g. after app update)
+for(var di=0;di<3;di++){
+  var sl=SLOTS[di];
+  if(!st.selIds[di]||st.selIds[di].length!==sl.length){
+    st.selIds[di]=sl.map(function(s){return getFirstEnabled(s.ids);});
+  } else {
+    // validate each id still exists; replace with first option if not
+    st.selIds[di]=st.selIds[di].map(function(id,si){
+      return sl[si]&&sl[si].ids.indexOf(id)>=0?id:getFirstEnabled(sl[si].ids);
+    });
+  }
+}
+
+var curDay=0,timers={},libFilt="all";
+function gex(id){return EX.find(function(e){return e.id===id;});}
+function getFirstEnabled(ids){
+  if(!st.disabledExercises)return ids[0];
+  for(var i=0;i<ids.length;i++){if(st.disabledExercises.indexOf(ids[i])<0)return ids[i];}
+  return null;
+}
+function getCurEx(d){
+  return st.selIds[d].map(function(id){
+    if(!id)return null;
+    if(st.disabledExercises&&st.disabledExercises.indexOf(id)>=0)return null;
+    return gex(id);
+  });
+  // NOTE: DO NOT .filter(Boolean) — keep nulls for index alignment with SLOTS
+}
+
+// SOUND
+function beep(f,d,v){
+  try{var c=new(window.AudioContext||window.webkitAudioContext)();var o=c.createOscillator();var g=c.createGain();
+  o.connect(g);g.connect(c.destination);o.frequency.value=f||880;
+  g.gain.setValueAtTime(v||.3,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+(d||.2));
+  o.start(c.currentTime);o.stop(c.currentTime+(d||.2));}catch(e){}}
+function beepOk(){beep(660,.15,.2);setTimeout(function(){beep(880,.25,.3);},150);}
+function beepFin(){[500,700,900].forEach(function(f,i){setTimeout(function(){beep(f,.3,.25);},i*120);});}
+
+// TOAST
+var ttimer;
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(ttimer);ttimer=setTimeout(function(){t.classList.remove('show');},2200);}
+
+// SCREENS
+var curScreen='welcome';
+var dayLabels=['День A — Таз, поясница, ноги','День B — Шея, осанка, плечи','День C — Кор, стабилизация'];
+function goScreen(nm){
+  ['welcome','workout','library','stats'].forEach(function(s){document.getElementById(s).classList.toggle('hidden',s!==nm);});
+  ['nbHome','nbWorkout','nbStats','nbLibrary'].forEach(function(id,i){document.getElementById(id).classList.toggle('active',['welcome','workout','stats','library'][i]===nm);});
+  document.getElementById('workoutBar').style.display=nm==='workout'?'flex':'none';
+  curScreen=nm;
+  if(nm==='welcome')renderWelcome();
+  if(nm==='workout')renderWorkout();
+  if(nm==='library')renderLib();
+  if(nm==='stats')renderStats();
+}
+function goDay(d){curDay=d;goScreen('workout');}
+
+// WELCOME
+function renderWelcome(){
+  var d=new Date();
+  var days=['воскресенье','понедельник','вторник','среда','четверг','пятница','суббота'];
+  var months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  document.getElementById('wDate').textContent=days[d.getDay()]+', '+d.getDate()+' '+months[d.getMonth()];
+  document.getElementById('wStr').textContent=st.streak;
+  document.getElementById('wPts').textContent=st.points;
+  document.getElementById('wTot').textContent=st.total;
+  document.getElementById('wWk').textContent=st.weekCount+'/3';
+  document.getElementById('wShuf').textContent=st.shuffles;
+  var ns=['пн','вт','ср','чт','пт','сб','вс'];var dow=d.getDay();var ti=dow===0?6:dow-1;
+  document.getElementById('wDots').innerHTML=ns.map(function(n,i){
+    var c=st.trainedDays.indexOf(i)>=0?'wd done':(i===ti?'wd today':'wd');
+    return '<div class="'+c+'"><span>'+n+'</span></div>';
+  }).join('');
+  var dnames=['День A — Таз, поясница, ноги','День B — Шея, осанка, плечи','День C — Кор, стабилизация'];
+  var dsubs=['12 слотов · 40+ упражнений на выбор','16 слотов · 40+ упражнений на выбор','11 слотов · 30+ упражнений на выбор'];
+  document.getElementById('dcards').innerHTML=dnames.map(function(nm,i){
+    var done=st.doneTypes.indexOf(i)>=0;
+    return '<div class="dc'+(done?' done':'')+'" onclick="goDay('+i+')">'
+      +'<div><div class="dc-name">'+nm+'</div><div class="dc-sub">'+dsubs[i]+'</div></div>'
+      +(done?'<div class="dc-badge">Выполнен</div>':'<div class="dc-arrow">›</div>')
+    +'</div>';
+  }).join('');
+  document.getElementById('wAch').innerHTML=ACHS.map(function(a){
+    var e=a.check(st);
+    return '<div class="ach-pill" style="background:'+(e?'var(--gbg)':'var(--bg2)')
+      +';color:'+(e?'var(--gtext)':'var(--text2)')
+      +';border:1px solid '+(e?'var(--green)':'var(--border)')+'">'+a.label+'</div>';
+  }).join('');
+  // soft reminder
+  var reminderHtml='';
+  var todayKey=new Date().toDateString();
+  var trainedToday=st.completedDays&&st.completedDays[todayKey]!==undefined;
+  var dismissed=st.lastReminder===todayKey;
+  if(!trainedToday&&!dismissed){
+    if(st.total===0){
+      reminderHtml='<div style="background:var(--gbg);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;">'
+        +'<div style="font-size:13px;color:var(--gtext);">Начни с <b>Дня A</b> — Таз, поясница, ноги</div>'
+        +'<button style="background:transparent;border:none;color:var(--gtext);font-size:16px;cursor:pointer;" onclick="dismissReminder()">&#10005;</button></div>';
+    } else {
+      var lastType=-1;
+      if(st.history&&st.history.length){lastType=st.history[st.history.length-1].dayType;}
+      else if(st.doneTypes&&st.doneTypes.length){lastType=st.doneTypes[st.doneTypes.length-1];}
+      var nextType=(lastType+1)%3;
+      var dnames2=['День A — Таз, поясница, ноги','День B — Шея, осанка, плечи','День C — Кор, стабилизация'];
+      var daysSinceLast=0;
+      if(st.lastDate){daysSinceLast=Math.floor((Date.now()-new Date(st.lastDate).getTime())/(1000*60*60*24));}
+      var msg=daysSinceLast>1
+        ?daysSinceLast+' дн. без тренировки — не теряй стрик!'
+        :'Сегодня по плану <b>'+dnames2[nextType]+'</b>';
+      reminderHtml='<div style="background:var(--gbg);border-radius:var(--r);padding:14px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="goDay('+nextType+')">'
+        +'<div style="font-size:13px;color:var(--gtext);">'+msg+'</div>'
+        +'<button style="background:transparent;border:none;color:var(--gtext);font-size:16px;cursor:pointer;" onclick="dismissReminder();event.stopPropagation();">&#10005;</button></div>';
+    }
+  }
+  document.getElementById('wReminder').innerHTML=reminderHtml;
+}
+
+// WORKOUT
+function renderWorkout(){
+  document.getElementById('wkTitle').textContent=dayLabels[curDay];
+  document.getElementById('wkPts').textContent=st.points+' pts';
+  document.getElementById('dtabs').innerHTML=[0,1,2].map(function(i){
+    var done=st.doneTypes.indexOf(i)>=0;
+    return '<button class="dtab'+(i===curDay?' active':'')+(done&&i!==curDay?' done':'')+'" onclick="sw('+i+')">'+['A','B','C'][i]+'</button>';
+  }).join('');
+  renderEx();
+}
+function sw(n){curDay=n;timers={};document.getElementById('wkTitle').textContent=dayLabels[n];
+  document.getElementById('dtabs').querySelectorAll('.dtab').forEach(function(t,i){t.className='dtab'+(i===n?' active':'')+(st.doneTypes.indexOf(i)>=0&&i!==n?' done':'');});renderEx();}
+
+function fmt(s){return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);}
+
+function renderEx(){
+  var exs=getCurEx(curDay);
+  var slots=SLOTS[curDay];
+  var lastPhase='';
+  var phaseColors={разминка:'#888',активация:'#60a5fa',стабилизация:'#f59e0b',укрепление:'var(--green)',растяжка:'#a78bfa',баланс:'#3b82f6',релиз:'#059669',расслабление:'#059669'};
+  document.getElementById('exList').innerHTML=exs.map(function(ex,i){
+    if(!ex)return'';
+    var phaseHtml='';
+    var slot=slots[i];
+    if(slot&&slot.phase!==lastPhase){
+      lastPhase=slot.phase;
+      var c=phaseColors[slot.phase]||'var(--text2)';
+      phaseHtml='<div style="padding:8px 0 4px;display:flex;align-items:center;gap:8px;"><div style="height:1px;flex:1;background:var(--border);"></div><span style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:'+c+';white-space:nowrap;">'+slot.phase+'</span><div style="height:1px;flex:1;background:var(--border);"></div></div>';
+    }
+    var key=curDay+'_'+i;
+    var params=getExParams(ex);
+    var sets=st.exerciseSets[key]||0;var done=sets>=params.sets;
+    var t=timers[key]||{running:false,elapsed:0};
+    var tgt=params.secs>0?params.secs:0;
+    var disp=tgt?fmt(Math.max(0,tgt-t.elapsed)):fmt(t.elapsed);
+    var pct=tgt>0?Math.min(100,Math.round(t.elapsed/tgt*100)):0;
+    var useT=params.secs>0||params.sets===1;
+    var ctrl=useT
+      ?'<button class="tbtn'+(t.running?' on':'')+'" onclick="togT(\''+key+'\','+params.secs+')">'+(t.running?'Стоп':'Старт')+'</button><span class="tdisp" id="td_'+key+'">'+disp+'</span>'
+      :'<div class="dots">'+Array.from({length:params.sets},function(_,s){return'<span class="dot'+(s<sets?' filled':'')+'" onclick="addS(\''+key+'\','+params.sets+')"></span>';}).join('')+'<span class="dlbl">'+sets+'/'+params.sets+'</span></div>';
+    // +/- buttons for progression
+    var adjBtns='';
+    if(params.secs>0){
+      adjBtns='<span style="display:inline-flex;gap:4px;margin-left:8px;">'
+        +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:12px;" onclick="adjParam(\''+ex.id+'\',\'secs\',-5)">&#8722;</button>'
+        +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:12px;" onclick="adjParam(\''+ex.id+'\',\'secs\',5)">+</button></span>';
+    } else if(params.reps){
+      adjBtns='<span style="display:inline-flex;gap:4px;margin-left:8px;">'
+        +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:12px;" onclick="adjParam(\''+ex.id+'\',\'reps\',-1)">&#8722;</button>'
+        +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:12px;" onclick="adjParam(\''+ex.id+'\',\'reps\',1)">+</button></span>';
+    }
+    var metaParts=[];
+    if(params.sets>1)metaParts.push(params.sets+' подхода');
+    if(params.reps)metaParts.push(params.reps);
+    if(params.secs>0)metaParts.push(params.secs+' сек');
+    // progression hint
+    var progHint='';
+    if(shouldSuggestProgression(ex.id)){
+      progHint='<div style="margin:0 16px 10px;padding:9px 12px;background:var(--gbg);border-radius:var(--rsm);border-left:2px solid var(--green);font-size:12px;color:var(--gtext);display:flex;justify-content:space-between;align-items:center;">'
+        +'<span>Готов усложнить? Ты делаешь это 2+ недели</span>'
+        +'<button style="background:transparent;border:1px solid var(--green);border-radius:var(--rp);padding:3px 10px;font-size:11px;color:var(--gtext);cursor:pointer;" onclick="dismissProgression(\''+ex.id+'\')">Позже</button></div>';
+    }
+    var steps='';
+    if(ex.steps&&ex.steps.length){
+      steps='<div class="steps-tog" onclick="togSteps(\'sb_'+key+'\',\'si_'+key+'\')">'
+        +'<span class="st-lbl">Как выполнять</span><span class="st-icon" id="si_'+key+'">▼</span></div>'
+        +'<div class="steps-b" id="sb_'+key+'">'
+        +'<ul class="steps-ul">'+ex.steps.map(function(s,n){
+          return'<li class="step-li"><div class="step-n">'+(n+1)+'</div><div class="step-t">'+s+'</div></li>';
+        }).join('')+'</ul>'
+        +(ex.yt?'<a class="yt-a" href="'+ex.yt+'" target="_blank"><svg viewBox="0 0 24 24"><polygon points="10 8 16 12 10 16 10 8"/><rect x="2" y="4" width="20" height="16" rx="4" fill="none" stroke="white" stroke-width="1.5"/></svg>Смотреть на YouTube</a>':'')
+        +'</div>';
+    }
+    return phaseHtml+'<div class="card" id="card_'+key+'">'
+      +'<div class="c-head"><div class="ex-name">'+ex.name+'</div><div class="role-pill">'+ex.role+'</div>'
+      +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="if(confirm(\'Отключить упражнение?\'))toggleExDis(\''+ex.id+'\')">&#10005;</button></div>'
+      +'<div class="c-meta">'+metaParts.join(' · ')+adjBtns+'</div>'
+      +(ex.warn?'<div class="warn">&#9888; '+ex.warn+'</div>':'')
+      +'<div class="tip-b"><div class="tip-t">'+ex.tip+'</div></div>'
+      +progHint
+      +steps
+      +'<div class="c-ctrl">'+ctrl+'<button class="dbtn'+(done?' ok':'')+'" onclick="markD(\''+key+'\','+params.sets+')">'+(done?'&#10003;':'Готово')+'</button></div>'
+      +(tgt>0&&t.elapsed>0?'<div class="pbar"><div class="pfill" id="pf_'+key+'" style="width:'+pct+'%"></div></div>':'')
+    +'</div>';
+  }).join('');
+}
+
+function togSteps(sid,iid){
+  var el=document.getElementById(sid);var ic=document.getElementById(iid);
+  if(!el)return;var o=el.classList.toggle('open');if(ic)ic.classList.toggle('open',o);
+}
+function togT(key,secs){
+  if(!timers[key])timers[key]={running:false,elapsed:0,interval:null};
+  var t=timers[key];
+  if(t.running){clearInterval(t.interval);t.running=false;}
+  else{t.running=true;t.interval=setInterval(function(){
+    t.elapsed++;
+    if(secs>0&&t.elapsed%10===0&&t.elapsed<secs)beep(440,.05,.1);
+    if(secs>0&&t.elapsed>=secs){clearInterval(t.interval);t.running=false;markD(key,1);beepOk();toast('Время вышло! +10');}
+    var td=document.getElementById('td_'+key);if(td)td.textContent=secs?fmt(Math.max(0,secs-t.elapsed)):fmt(t.elapsed);
+    var pf=document.getElementById('pf_'+key);if(pf&&secs>0)pf.style.width=Math.min(100,Math.round(t.elapsed/secs*100))+'%';
+  },1000);}
+  renderEx();
+}
+function addS(key,tot){
+  var cur=st.exerciseSets[key]||0;if(cur>=tot)return;
+  st.exerciseSets[key]=cur+1;st.points+=5;
+  if(st.exerciseSets[key]===tot){beepOk();toast('Подход! +5');}
+  saveSt();renderEx();document.getElementById('wkPts').textContent=st.points+' pts';
+  // rest timer: not last set, not timed, not warmup
+  if(st.exerciseSets[key]<tot){
+    var di=parseInt(key.split('_')[0]),si=parseInt(key.split('_')[1]);
+    var slot=SLOTS[di]&&SLOTS[di][si];
+    var ex=getCurEx(di)[si];
+    if(slot&&slot.phase!=='разминка'&&ex&&ex.secs===0){
+      startRest();
+    }
+  }
+}
+function markD(key,tot){
+  var was=(st.exerciseSets[key]||0)>=tot;
+  st.exerciseSets[key]=tot;
+  if(!was){st.points+=10;beepOk();toast('Выполнено! +10');
+    var exId=getCurEx(curDay)[parseInt(key.split('_')[1])];
+    if(exId)st.exCompletions[exId.id]=(st.exCompletions[exId.id]||0)+1;
+    var c=document.getElementById('card_'+key);if(c){c.classList.add('pop');setTimeout(function(){c.classList.remove('pop');},400);}
+  }
+  saveSt();renderEx();document.getElementById('wkPts').textContent=st.points+' pts';
+}
+function smartShuffle(){
+  SLOTS[curDay].forEach(function(sl,i){
+    var enabled=sl.ids.filter(function(id){return !st.disabledExercises||st.disabledExercises.indexOf(id)<0;});
+    if(enabled.length<2)return;
+    var cur=st.selIds[curDay][i];var idx=enabled.indexOf(cur);
+    st.selIds[curDay][i]=enabled[(idx+1)%enabled.length];
+  });
+  st.shuffles++;st.exerciseSets={};timers={};saveSt();renderEx();toast('Упражнения перемешаны!');
+}
+function finishWorkout(){
+  var tk=new Date().toDateString();
+  if(st.completedDays&&st.completedDays[tk]!==undefined){toast('Уже засчитано сегодня!');return;}
+  if(!st.completedDays)st.completedDays={};
+  st.completedDays[tk]=curDay;st.total++;st.points+=50;
+  // track history
+  var exCount=getCurEx(curDay).filter(Boolean).length;
+  st.history.push({date:tk,dayType:curDay,points:50,exerciseCount:exCount,duration:0});
+  if(st.doneTypes.indexOf(curDay)<0)st.doneTypes.push(curDay);
+  st.weekCount=Math.min(3,st.weekCount+1);
+  var dow=new Date().getDay();var ti=dow===0?6:dow-1;
+  if(st.trainedDays.indexOf(ti)<0)st.trainedDays.push(ti);
+  var ld=st.lastDate?new Date(st.lastDate):null;var now=new Date();
+  st.streak=(ld&&(now-ld)<2*24*3600*1000)?st.streak+1:1;
+  // track maxStreak after streak is updated
+  if(st.streak>st.maxStreak)st.maxStreak=st.streak;
+  st.lastDate=now.toISOString();saveSt();beepFin();toast('Тренировка завершена! +50 🎉');
+  setTimeout(function(){renderWorkout();},300);
+}
+
+// AUTO PLAYER — fullscreen workout mode
+var ap={active:false,idx:0,timer:null,restTimer:null,elapsed:0,phase:'idle',wakeLock:null};
+var apPhaseBgs={разминка:'rgba(128,128,128,.35)',активация:'rgba(96,165,250,.4)',стабилизация:'rgba(245,158,11,.35)',укрепление:'rgba(29,158,117,.37)',растяжка:'rgba(167,139,250,.38)',баланс:'rgba(59,130,246,.37)',релиз:'rgba(5,150,105,.35)',расслабление:'rgba(5,150,105,.35)'};
+var apPhaseColors={разминка:'#888',активация:'#60a5fa',стабилизация:'#f59e0b',укрепление:'var(--green)',растяжка:'#a78bfa',баланс:'#3b82f6',релиз:'#059669',расслабление:'#059669'};
+function apVibrate(ms){try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}}
+var AP_R=84,AP_C=2*Math.PI*AP_R;// ring radius and circumference
+function apRingHtml(pct,numText){
+  var offset=AP_C*(1-pct);
+  return '<div class="ap-ring-wrap"><svg class="ap-ring-svg" viewBox="0 0 180 180">'
+    +'<circle class="ap-ring-track" cx="90" cy="90" r="'+AP_R+'"/>'
+    +'<circle class="ap-ring-fill" id="apRingFill" cx="90" cy="90" r="'+AP_R+'" stroke-dasharray="'+AP_C+'" stroke-dashoffset="'+offset+'"/>'
+    +'</svg><div class="ap-ring-num" id="apTimer">'+numText+'</div></div>';
+}
+function apUpdateRing(pct){
+  var el=document.getElementById('apRingFill');
+  if(!el)return;
+  el.style.transition='stroke-dashoffset 1s linear';
+  el.style.strokeDashoffset=AP_C*(1-pct);
+}
+function apWakeLock(){
+  if(!navigator.wakeLock)return;
+  navigator.wakeLock.request('screen').then(function(l){ap.wakeLock=l;}).catch(function(){});
+}
+function apWakeUnlock(){if(ap.wakeLock){ap.wakeLock.release().catch(function(){});ap.wakeLock=null;}}
+function apEstimate(){
+  var list=apGetExercises();var sec=0;var rest=st.restTime||60;
+  for(var i=ap.idx;i<list.length;i++){
+    var p=list[i].params;var key=curDay+'_'+list[i].slotIdx;var done=st.exerciseSets[key]||0;
+    var rem=Math.max(0,p.sets-done);
+    if(p.secs>0)sec+=rem*p.secs; else sec+=rem*20;
+    if(rem>1)sec+=(rem-1)*rest;
+  }
+  if(sec<60)return '<1 мин';
+  return '~'+Math.round(sec/60)+' мин';
+}
+function openAutoPlayer(){
+  ap.active=true;ap.idx=0;ap.phase='idle';ap.elapsed=0;
+  document.getElementById('autoPlayer').style.display='flex';
+  document.getElementById('workoutBar').style.display='none';
+  apWakeLock();apFindNext(0);apRender();
+}
+function closeAutoPlayer(){
+  ap.active=false;clearInterval(ap.timer);clearInterval(ap.restTimer);
+  ap.timer=null;ap.restTimer=null;ap.phase='idle';
+  document.getElementById('autoPlayer').style.display='none';
+  document.getElementById('autoPlayer').style.background='var(--bg)';
+  document.getElementById('workoutBar').style.display='flex';
+  apWakeUnlock();renderEx();
+}
+function apGetExercises(){
+  var exs=getCurEx(curDay);var result=[];
+  for(var i=0;i<exs.length;i++){if(exs[i])result.push({ex:exs[i],slotIdx:i,params:getExParams(exs[i])});}
+  return result;
+}
+function apFindNext(fromIdx){
+  var list=apGetExercises();
+  for(var i=fromIdx;i<list.length;i++){
+    var key=curDay+'_'+list[i].slotIdx;
+    if((st.exerciseSets[key]||0)<list[i].params.sets){ap.idx=i;return true;}
+  }
+  return false;
+}
+function apGoBack(){
+  clearInterval(ap.timer);clearInterval(ap.restTimer);ap.timer=null;ap.restTimer=null;
+  if(ap.idx>0){ap.idx--;ap.phase='idle';ap.elapsed=0;apRender();}
+}
+function apRender(){
+  var list=apGetExercises();
+  if(ap.idx>=list.length){apFinish();return;}
+  var item=list[ap.idx];var ex=item.ex;var p=item.params;
+  var key=curDay+'_'+item.slotIdx;
+  var slot=SLOTS[curDay][item.slotIdx];
+  var total=list.length;
+  var setsDone=st.exerciseSets[key]||0;
+  var isTimed=p.secs>0;
+  var phaseColor=slot?apPhaseColors[slot.phase]||'var(--text2)':'var(--text2)';
+  // phase background
+  var bg=slot&&apPhaseBgs[slot.phase]?apPhaseBgs[slot.phase]:'transparent';
+  document.getElementById('autoPlayer').style.background='linear-gradient(180deg,'+bg+' 0%,transparent 100%),var(--bg)';
+  var h='';
+  // header with ETA
+  h+='<div class="ap-top"><button class="ap-close" onclick="closeAutoPlayer()">\u2715</button>';
+  h+='<div style="text-align:center;"><div class="ap-progress">'+(ap.idx+1)+' / '+total+'</div>';
+  h+='<div class="ap-eta">'+apEstimate()+'</div></div>';
+  h+='<div style="width:36px"></div></div>';
+  h+='<div class="ap-pbar"><div class="ap-pfill" style="width:'+Math.round(ap.idx/total*100)+'%"></div></div>';
+  if(slot)h+='<div class="ap-phase" style="color:'+phaseColor+'">'+slot.phase+'</div>';
+  h+='<div class="ap-name">'+ex.name+'</div>';
+  var meta=[];if(p.sets>1)meta.push(p.sets+' подхода');if(p.reps)meta.push(p.reps);if(p.secs>0)meta.push(p.secs+' сек');
+  h+='<div class="ap-meta">'+meta.join(' · ')+'</div>';
+  if(p.sets>1){
+    h+='<div class="ap-sets">';
+    for(var s=0;s<p.sets;s++)h+='<div class="ap-set-dot'+(s<setsDone?' filled':'')+(s===setsDone&&ap.phase!=='rest'?' current':'')+'"></div>';
+    h+='</div>';
+  }
+  if(ap.phase==='prep'){
+    var prepTotal=10;var ppct=1-ap.elapsed/prepTotal;
+    h+=apRingHtml(ppct,ap.elapsed);
+    h+='<div class="ap-ring-lbl">Подготовка</div>';
+    if(ex.steps&&ex.steps.length){
+      h+='<div style="width:100%;max-width:320px;text-align:left;margin-bottom:12px;"><ol class="ap-steps">';
+      ex.steps.forEach(function(s){h+='<li>'+s+'</li>';});
+      h+='</ol></div>';
+    }
+    h+='<button class="ap-btn" onclick="apSkipPrep()">Готов</button>';
+  } else if(ap.phase==='rest'){
+    var restTotal=st.restTime||60;var rpct=1-ap.elapsed/restTotal;
+    h+=apRingHtml(rpct,ap.elapsed);
+    h+='<div class="ap-ring-lbl">Отдых · подход '+(setsDone)+'/'+p.sets+'</div>';
+    var nextItem=null;
+    for(var ni=ap.idx+1;ni<list.length;ni++){var nk=curDay+'_'+list[ni].slotIdx;if((st.exerciseSets[nk]||0)<list[ni].params.sets){nextItem=list[ni];break;}}
+    if(nextItem&&setsDone>=p.sets){
+      h+='<div class="ap-next"><div class="ap-next-lbl">Далее</div><div class="ap-next-name">'+nextItem.ex.name+'</div></div>';
+    }
+    h+='<button class="ap-btn" onclick="apSkipRest()">Пропустить</button>';
+  } else if(isTimed){
+    var remaining=Math.max(0,p.secs-ap.elapsed);
+    var tpct=p.secs>0?ap.elapsed/p.secs:0;
+    h+=apRingHtml(tpct,remaining);
+    if(ap.phase==='idle'){
+      h+='<button class="ap-btn pulse" onclick="apStartTimer()">Старт</button>';
+    } else if(ap.phase==='paused'){
+      h+='<div class="ap-nav"><button class="ap-btn-sm" onclick="apGoBack()">\u2190 Назад</button><button class="ap-btn pulse" onclick="apResumeTimer()">Продолжить</button></div>';
+    } else {
+      h+='<div class="ap-nav"><button class="ap-btn-sm" onclick="apPauseTimer()">Пауза</button><button class="ap-btn-sm" onclick="apSkipExercise()">Пропустить</button></div>';
+    }
+  } else {
+    if(p.reps)h+='<div class="ap-reps-big">'+p.reps+'</div>';
+    if(ex.tip)h+='<div class="ap-tip">'+ex.tip+'</div>';
+    h+='<button class="ap-btn pulse" onclick="apDoneSet()">Готово</button>';
+    h+='<div class="ap-nav"><button class="ap-btn-sm" onclick="apGoBack()">\u2190 Назад</button><button class="ap-btn-sm" onclick="apSkipExercise()">Пропустить</button></div>';
+  }
+  // steps + youtube
+  if(ap.phase!=='rest'){
+    if(ex.steps&&ex.steps.length){
+      h+='<div class="ap-how" onclick="this.classList.toggle(\'open\')">';
+      h+='<div class="ap-how-tog"><span class="st-lbl">Как выполнять</span><span class="st-icon">\u25bc</span></div>';
+      h+='<div class="ap-how-body"><ol class="ap-steps">';
+      ex.steps.forEach(function(s){h+='<li>'+s+'</li>';});
+      h+='</ol></div></div>';
+    }
+    if(ex.yt)h+='<a class="yt-a" href="'+ex.yt+'" target="_blank" style="margin-top:4px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:#fff;flex-shrink:0;"><polygon points="10 8 16 12 10 16 10 8"/><rect x="2" y="4" width="20" height="16" rx="4" fill="none" stroke="white" stroke-width="1.5"/></svg>YouTube</a>';
+    if(ex.warn)h+='<div class="ap-warn">\u26a0 '+ex.warn+'</div>';
+  }
+  document.getElementById('apContent').innerHTML=h;
+}
+function apStartTimer(){
+  var list=apGetExercises();var p=list[ap.idx].params;
+  ap.elapsed=0;ap.phase='timing';apRender();
+  ap.timer=setInterval(function(){
+    ap.elapsed++;var rem=Math.max(0,p.secs-ap.elapsed);
+    var el=document.getElementById('apTimer');if(el)el.textContent=rem;
+    apUpdateRing(ap.elapsed/p.secs);
+    if(rem<=3&&rem>0){beep(440,.08,.15);apVibrate(50);}
+    if(rem<=0){clearInterval(ap.timer);ap.timer=null;beepOk();apVibrate([100,50,100]);apCompleteSet();}
+  },1000);
+}
+function apPauseTimer(){clearInterval(ap.timer);ap.timer=null;ap.phase='paused';apRender();}
+function apResumeTimer(){
+  var list=apGetExercises();var p=list[ap.idx].params;
+  ap.phase='timing';apRender();
+  ap.timer=setInterval(function(){
+    ap.elapsed++;var rem=Math.max(0,p.secs-ap.elapsed);
+    var el=document.getElementById('apTimer');if(el)el.textContent=rem;
+    apUpdateRing(ap.elapsed/p.secs);
+    if(rem<=3&&rem>0){beep(440,.08,.15);apVibrate(50);}
+    if(rem<=0){clearInterval(ap.timer);ap.timer=null;beepOk();apVibrate([100,50,100]);apCompleteSet();}
+  },1000);
+}
+function apCompleteSet(){
+  var list=apGetExercises();var item=list[ap.idx];var p=item.params;
+  var key=curDay+'_'+item.slotIdx;
+  var cur=st.exerciseSets[key]||0;st.exerciseSets[key]=cur+1;st.points+=5;
+  if(st.exerciseSets[key]>=p.sets){st.points+=10;st.exCompletions[item.ex.id]=(st.exCompletions[item.ex.id]||0)+1;}
+  saveSt();apVibrate(80);
+  if(st.exerciseSets[key]>=p.sets){
+    ap.phase='idle';ap.elapsed=0;
+    if(apFindNext(ap.idx+1)){
+      var nextList=apGetExercises();var nextP=nextList[ap.idx].params;
+      if(nextP.secs>0){apStartPrep();}else{apRender();}
+    }else apFinish();
+  } else if(p.secs>0){
+    apStartRest();
+  } else {
+    ap.phase='idle';ap.elapsed=0;apRender();
+  }
+}
+function apDoneSet(){apCompleteSet();}
+function apStartRest(){
+  var restTime=15;ap.phase='rest';ap.elapsed=restTime;beepOk();apVibrate(80);apRender();
+  ap.restTimer=setInterval(function(){
+    ap.elapsed--;
+    var el=document.getElementById('apTimer');if(el)el.textContent=ap.elapsed;
+    apUpdateRing(1-ap.elapsed/restTime);
+    if(ap.elapsed<=3&&ap.elapsed>0){beep(440,.05,.1);apVibrate(50);}
+    if(ap.elapsed<=0){apVibrate([100,50,100]);apSkipRest();}
+  },1000);
+}
+function apSkipRest(){
+  clearInterval(ap.restTimer);ap.restTimer=null;ap.phase='idle';ap.elapsed=0;beepOk();apRender();apAutoStart();
+}
+function apStartPrep(){
+  var prepTime=10;ap.phase='prep';ap.elapsed=prepTime;
+  apRender();
+  ap.restTimer=setInterval(function(){
+    ap.elapsed--;
+    var el=document.getElementById('apTimer');if(el)el.textContent=ap.elapsed;
+    apUpdateRing(1-ap.elapsed/prepTime);
+    if(ap.elapsed<=3&&ap.elapsed>0){beep(550,.06,.12);apVibrate(40);}
+    if(ap.elapsed<=0){
+      clearInterval(ap.restTimer);ap.restTimer=null;
+      beepOk();apVibrate([80,40,80]);
+      ap.phase='idle';ap.elapsed=0;apRender();apAutoStart();
+    }
+  },1000);
+}
+function apSkipPrep(){
+  clearInterval(ap.restTimer);ap.restTimer=null;
+  ap.phase='idle';ap.elapsed=0;apRender();apAutoStart();
+}
+function apAutoStart(){
+  var list=apGetExercises();if(ap.idx>=list.length)return;
+  var p=list[ap.idx].params;
+  if(p.secs>0){setTimeout(function(){if(ap.active&&ap.phase==='idle')apStartTimer();},1200);}
+}
+function apSkipExercise(){
+  clearInterval(ap.timer);clearInterval(ap.restTimer);ap.timer=null;ap.restTimer=null;
+  var list=apGetExercises();var item=list[ap.idx];var p=item.params;
+  var key=curDay+'_'+item.slotIdx;st.exerciseSets[key]=p.sets;st.points+=10;
+  st.exCompletions[item.ex.id]=(st.exCompletions[item.ex.id]||0)+1;saveSt();
+  ap.phase='idle';ap.elapsed=0;
+  if(apFindNext(ap.idx+1)){
+    var nl=apGetExercises();var np=nl[ap.idx].params;
+    if(np.secs>0){apStartPrep();}else{apRender();}
+  }else apFinish();
+}
+function apFinish(){
+  ap.phase='done';var list=apGetExercises();
+  document.getElementById('autoPlayer').style.background='var(--bg)';
+  var h='<div class="ap-done-icon">\u2713</div>';
+  h+='<div class="ap-name">Все упражнения выполнены!</div>';
+  h+='<div class="ap-meta">'+list.length+' упражнений</div>';
+  h+='<button class="ap-btn" onclick="finishWorkout();closeAutoPlayer();">Завершить тренировку +50</button>';
+  h+='<button class="ap-btn-sec" onclick="closeAutoPlayer()">Назад к списку</button>';
+  document.getElementById('apContent').innerHTML=h;beepFin();apVibrate([100,80,100,80,200]);
+}
+
+// LIBRARY
+var allRoles=[];
+EX.forEach(function(e){if(allRoles.indexOf(e.role)<0)allRoles.push(e.role);});
+
+function renderLib(){
+  var q=(document.getElementById('libQ').value||'').toLowerCase();
+  var chips=['all','отключённые'].concat(allRoles);
+  document.getElementById('libF').innerHTML=chips.map(function(r){
+    return'<button class="fchip'+(libFilt===r?' active':'')+'" onclick="setFilt(\''+r+'\')">'+(r==='all'?'Все':(r==='отключённые'?'Отключённые':r))+'</button>';
+  }).join('');
+  var exs=EX.filter(function(e){
+    var mf;
+    if(libFilt==='отключённые'){
+      mf=st.disabledExercises&&st.disabledExercises.indexOf(e.id)>=0;
+    } else {
+      mf=libFilt==='all'||e.role===libFilt;
+    }
+    var mq=!q||e.name.toLowerCase().includes(q)||e.role.toLowerCase().includes(q);
+    return mf&&mq;
+  });
+  document.getElementById('libL').innerHTML=exs.map(function(ex){
+    var dl=['День A','День B','День C'];var days=ex.day.map(function(d){return dl[d];}).join(', ');
+    var sid='ls_'+ex.id;
+    var isOff=st.disabledExercises&&st.disabledExercises.indexOf(ex.id)>=0;
+    var cardStyle=isOff?'opacity:.5;':'';
+    var togHtml='<button style="margin-left:8px;padding:3px 10px;border-radius:var(--rp);font-size:11px;cursor:pointer;border:1px solid '
+      +(isOff?'var(--amber)':'var(--green)')+';background:'+(isOff?'var(--abg)':'transparent')+';color:'+(isOff?'var(--amber)':'var(--gtext)')+';" onclick="toggleExDis(\''+ex.id+'\');event.stopPropagation();">'
+      +(isOff?'Отключено':'Вкл')+'</button>';
+    return'<div class="lc" style="'+cardStyle+'">'
+      +'<div class="lc-top"><div class="lc-name">'+ex.name+'</div><div style="display:flex;align-items:center;"><div class="lc-role">'+ex.role+'</div>'+togHtml+'</div></div>'
+      +'<div class="lc-tip">'+ex.tip+'</div>'
+      +(ex.warn?'<div style="font-size:12px;color:var(--amber);margin-top:6px;">&#9888; '+ex.warn+'</div>':'')
+      +'<div style="font-size:11px;color:var(--text3);margin-top:6px;">'+days+' · '+(ex.sets>1?ex.sets+' подхода':ex.secs+' сек')+(ex.reps?' · '+ex.reps:'')+'</div>'
+      +(ex.steps?'<div style="display:flex;align-items:center;gap:6px;margin-top:10px;cursor:pointer;" onclick="togLS(\''+sid+'\')">'
+        +'<span style="font-size:12px;color:var(--green);font-weight:500;">Как выполнять</span>'
+        +'<span style="font-size:10px;color:var(--green);" id="lsi_'+ex.id+'">&#9660;</span></div>'
+        +'<div class="lc-steps" id="'+sid+'">'
+        +'<ul class="lc-steps-ul">'+ex.steps.map(function(s,n){
+          return'<li class="step-li"><div class="step-n">'+(n+1)+'</div><div class="step-t">'+s+'</div></li>';
+        }).join('')+'</ul>'
+        +(ex.yt?'<a class="yt-a" href="'+ex.yt+'" target="_blank"><svg viewBox="0 0 24 24"><polygon points="10 8 16 12 10 16 10 8"/><rect x="2" y="4" width="20" height="16" rx="4" fill="none" stroke="white" stroke-width="1.5"/></svg>YouTube</a>':'')
+        +'</div>':'')
+    +'</div>';
+  }).join('');
+}
+function setFilt(r){libFilt=r;renderLib();}
+function togLS(sid){
+  var el=document.getElementById(sid);if(!el)return;
+  var id=sid.replace('ls_','');var ic=document.getElementById('lsi_'+id);
+  var o=el.classList.toggle('open');if(ic)ic.style.transform=o?'rotate(180deg)':'';
+}
+
+// STATS
+var calMonth=new Date().getMonth(),calYear=new Date().getFullYear(),calSel=null;
+var stCurTab='cal';
+
+function stTab(t){
+  stCurTab=t;
+  document.getElementById('stCal').style.display=t==='cal'?'block':'none';
+  document.getElementById('stGraphs').style.display=t==='graphs'?'block':'none';
+  var tabs=document.getElementById('stTabs').querySelectorAll('.dtab');
+  tabs[0].className='dtab'+(t==='cal'?' active':'');
+  tabs[1].className='dtab'+(t==='graphs'?' active':'');
+  if(t==='cal')renderCal();
+  if(t==='graphs')renderGraphs();
+}
+
+function renderStats(){
+  if(stCurTab==='cal')renderCal();else renderGraphs();
+}
+
+function renderCal(){
+  var months=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  var first=new Date(calYear,calMonth,1);
+  var startDow=first.getDay();startDow=startDow===0?6:startDow-1;// Monday=0
+  var daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  var prevDays=new Date(calYear,calMonth,0).getDate();
+  var today=new Date();
+  var todayStr=today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+
+  // build history lookup: "YYYY-M-D" -> entry
+  var hmap={};
+  (st.history||[]).forEach(function(h){
+    var d=new Date(h.date);
+    var k=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+    hmap[k]=h;
+  });
+
+  var html='<div class="cal-nav">';
+  html+='<button onclick="calNav(-1)">&larr;</button>';
+  html+='<div class="cal-month">'+months[calMonth]+' '+calYear+'</div>';
+  html+='<button onclick="calNav(1)">&rarr;</button></div>';
+  html+='<div class="cal-grid">';
+  ['пн','вт','ср','чт','пт','сб','вс'].forEach(function(d){html+='<div class="cal-hdr">'+d+'</div>';});
+
+  // prev month fill
+  for(var p=startDow-1;p>=0;p--){
+    html+='<div class="cal-d other">'+(prevDays-p)+'</div>';
+  }
+  // current month
+  for(var d=1;d<=daysInMonth;d++){
+    var k=calYear+'-'+(calMonth+1)+'-'+d;
+    var cls='cal-d';
+    if(hmap[k])cls+=' has';
+    if(k===todayStr)cls+=' today';
+    if(calSel===k)cls+=' sel';
+    html+='<div class="'+cls+'" onclick="calPick(\''+k+'\')">'+d+'</div>';
+  }
+  // next month fill
+  var totalCells=startDow+daysInMonth;
+  var rem=totalCells%7===0?0:7-totalCells%7;
+  for(var n=1;n<=rem;n++){html+='<div class="cal-d other">'+n+'</div>';}
+  html+='</div>';
+
+  // detail
+  if(calSel&&hmap[calSel]){
+    var h=hmap[calSel];
+    var dn=['День A — Таз, поясница, ноги','День B — Шея, осанка, плечи','День C — Кор, стабилизация'];
+    html+='<div class="cal-detail"><div class="cal-detail-title">'+dn[h.dayType]+'</div>';
+    html+='<div class="cal-detail-sub">'+h.exerciseCount+' упражнений · +'+h.points+' очков</div></div>';
+  } else if(calSel){
+    html+='<div class="cal-detail"><div class="cal-detail-sub">Нет тренировки</div></div>';
+  }
+  document.getElementById('stCal').innerHTML=html;
+}
+function calNav(dir){calMonth+=dir;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}calSel=null;renderCal();}
+function calPick(k){calSel=calSel===k?null:k;renderCal();}
+
+// GRAPHS
+function renderGraphs(){
+  var html='';
+  // summary cards
+  html+='<div class="sg-cards">';
+  html+='<div class="sg-card"><div class="sg-card-v">'+st.total+'</div><div class="sg-card-l">тренировок</div></div>';
+  html+='<div class="sg-card"><div class="sg-card-v" style="color:var(--green);">'+st.points+'</div><div class="sg-card-l">очков</div></div>';
+  html+='<div class="sg-card"><div class="sg-card-v">'+st.maxStreak+'</div><div class="sg-card-l">макс стрик</div></div>';
+  html+='</div>';
+
+  // weekly bar chart (last 8 weeks)
+  html+='<div class="sg-sec">Тренировок в неделю</div>';
+  var weeks=[];var now=new Date();
+  for(var w=7;w>=0;w--){
+    var dow=now.getDay()||7;// Sunday=7 for ISO
+    var wStart=new Date(now);wStart.setDate(now.getDate()-dow+1-w*7);// Monday
+    var wEnd=new Date(wStart);wEnd.setDate(wStart.getDate()+6);
+    var count=0;
+    (st.history||[]).forEach(function(h){
+      var d=new Date(h.date);if(d>=wStart&&d<=wEnd)count++;
+    });
+    weeks.push({count:count,label:(wStart.getDate())+'/'+(wStart.getMonth()+1)});
+  }
+  var maxW=Math.max.apply(null,weeks.map(function(w){return w.count;}))||1;
+  html+='<div class="sg-bars">';
+  weeks.forEach(function(w,i){
+    var h=Math.round(w.count/maxW*100);
+    html+='<div class="sg-bar"><div class="sg-bar-fill'+(i===weeks.length-1?' cur':'')+'" style="height:'+Math.max(h,4)+'%;"></div><div class="sg-bar-lbl">'+w.label+'</div></div>';
+  });
+  html+='</div>';
+
+  // day balance pie
+  html+='<div class="sg-sec">Баланс по дням</div>';
+  var dc=[0,0,0];
+  (st.history||[]).forEach(function(h){if(h.dayType>=0&&h.dayType<=2)dc[h.dayType]++;});
+  var tot=dc[0]+dc[1]+dc[2]||1;
+  var pA=Math.round(dc[0]/tot*100),pB=Math.round(dc[1]/tot*100),pC=100-pA-pB;
+  html+='<div class="sg-pie-row">';
+  html+='<div class="sg-pie" style="background:conic-gradient(var(--green) 0% '+pA+'%, #d97706 '+pA+'% '+(pA+pB)+'%, #6366f1 '+(pA+pB)+'% 100%);"></div>';
+  html+='<div class="sg-legend">';
+  html+='<div><span style="color:var(--green);">&#9679;</span> День A — '+pA+'%</div>';
+  html+='<div><span style="color:#d97706;">&#9679;</span> День B — '+pB+'%</div>';
+  html+='<div><span style="color:#6366f1;">&#9679;</span> День C — '+pC+'%</div>';
+  html+='</div></div>';
+
+  document.getElementById('stGraphs').innerHTML=html;
+}
+
+// SETTINGS
+function openSett(){
+  document.getElementById('settingsOverlay').style.display='block';
+  document.getElementById('settingsModal').style.display='block';
+  renderRestBtns();
+}
+function closeSett(){
+  document.getElementById('settingsOverlay').style.display='none';
+  document.getElementById('settingsModal').style.display='none';
+}
+function renderRestBtns(){
+  var times=[30,45,60,90];
+  document.getElementById('restBtns').innerHTML=times.map(function(t){
+    return '<button class="tbtn'+(st.restTime===t?' on':'')+'" onclick="setRest('+t+')">'+t+' сек</button>';
+  }).join('');
+}
+function setRest(t){st.restTime=t;saveSt();renderRestBtns();toast('Отдых: '+t+' сек');}
+
+function exportData(){
+  var blob=new Blob([JSON.stringify(st,null,2)],{type:'application/json'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;
+  var d=new Date();
+  a.download='lfk-backup-'+d.getFullYear()+'-'+(d.getMonth()+1<10?'0':'')+(d.getMonth()+1)+'-'+(d.getDate()<10?'0':'')+d.getDate()+'.json';
+  a.click();URL.revokeObjectURL(url);
+  toast('Данные экспортированы');
+}
+function importData(ev){
+  var file=ev.target.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      if(data.version&&data.version>6){toast('Файл от более новой версии');return;}
+      if(data.points===undefined||data.total===undefined){toast('Неверный формат файла');return;}
+      if(!confirm('Заменить текущие данные? Это действие нельзя отменить.'))return;
+      // migrate if needed
+      if(!data.version||data.version<6)data=migrateV5(data);
+      st=data;saveSt();
+      toast('Данные импортированы');closeSett();renderWelcome();
+    }catch(err){toast('Ошибка чтения файла');}
+  };
+  reader.readAsText(file);
+  ev.target.value='';
+}
+function resetData(){
+  if(!confirm('Сбросить весь прогресс? Это действие нельзя отменить.'))return;
+  st=freshState();saveSt();toast('Прогресс сброшен');closeSett();renderWelcome();
+}
+
+// REST TIMER
+var restInterval=null;
+function startRest(){
+  var t=st.restTime||60;var rem=t;
+  document.getElementById('restOverlay').style.display='flex';
+  document.getElementById('restTime').textContent=rem;
+  document.getElementById('restBar').style.width='0%';
+  restInterval=setInterval(function(){
+    rem--;
+    document.getElementById('restTime').textContent=rem;
+    document.getElementById('restBar').style.width=Math.round((t-rem)/t*100)+'%';
+    if(rem<=3&&rem>0)beep(440,.05,.1);
+    if(rem<=0){skipRest();beepOk();toast('Отдых окончен!');}
+  },1000);
+}
+function skipRest(){
+  clearInterval(restInterval);restInterval=null;
+  document.getElementById('restOverlay').style.display='none';
+}
+
+// LOAD PROGRESSION
+function getExParams(ex){
+  var custom=st.customParams&&st.customParams[ex.id];
+  return{reps:custom&&custom.reps||ex.reps, secs:custom&&custom.secs!==undefined?custom.secs:ex.secs, sets:custom&&custom.sets||ex.sets};
+}
+function adjParam(exId,field,delta){
+  if(!st.customParams)st.customParams={};
+  if(!st.customParams[exId])st.customParams[exId]={};
+  var ex=gex(exId);if(!ex)return;
+  var cur=getExParams(ex);
+  if(field==='secs'){
+    var ns=Math.max(5,(cur.secs||ex.secs)+delta);
+    st.customParams[exId].secs=ns;
+  } else if(field==='reps'){
+    var m=(cur.reps||ex.reps).match(/(\d+)/);
+    if(m){var nv=Math.max(1,parseInt(m[1])+delta);
+      st.customParams[exId].reps=(cur.reps||ex.reps).replace(/\d+/,nv);}
+  }
+  if(!st.paramHistory)st.paramHistory={};
+  if(!st.paramHistory[exId])st.paramHistory[exId]=[];
+  st.paramHistory[exId].push({date:new Date().toISOString(),reps:st.customParams[exId].reps||ex.reps,secs:st.customParams[exId].secs||ex.secs});
+  saveSt();renderEx();
+}
+function shouldSuggestProgression(exId){
+  if(!st.exCompletions||!st.exCompletions[exId]||st.exCompletions[exId]<4)return false;
+  var hist=st.paramHistory&&st.paramHistory[exId];
+  var lastChange=hist&&hist.length?new Date(hist[hist.length-1].date):new Date(st.migrationDate||Date.now());
+  var daysSince=(Date.now()-lastChange.getTime())/(1000*60*60*24);
+  if(daysSince<14)return false;
+  var dismissed=st.progressionDismissed&&st.progressionDismissed[exId];
+  if(dismissed&&(Date.now()-new Date(dismissed).getTime())<7*24*60*60*1000)return false;
+  return true;
+}
+function dismissProgression(exId){
+  if(!st.progressionDismissed)st.progressionDismissed={};
+  st.progressionDismissed[exId]=new Date().toISOString();
+  saveSt();renderEx();
+}
+
+// EXERCISE DISABLING
+function toggleExDis(id){
+  if(!st.disabledExercises)st.disabledExercises=[];
+  var idx=st.disabledExercises.indexOf(id);
+  if(idx>=0){st.disabledExercises.splice(idx,1);toast('Упражнение включено');}
+  else{st.disabledExercises.push(id);toast('Упражнение отключено');}
+  for(var di=0;di<3;di++){
+    SLOTS[di].forEach(function(sl,si){
+      if(st.disabledExercises.indexOf(st.selIds[di][si])>=0){
+        st.selIds[di][si]=getFirstEnabled(sl.ids);
+      }
+    });
+  }
+  saveSt();renderLib();
+  if(curScreen==='workout')renderEx();
+}
+
+// SOFT REMINDER
+function dismissReminder(){
+  st.lastReminder=new Date().toDateString();
+  saveSt();
+  document.getElementById('wReminder').innerHTML='';
+}
+
+if('serviceWorker' in navigator)window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});
+renderWelcome();
+</script>
+</body>
+</html>
