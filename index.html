@@ -1232,7 +1232,18 @@ function apRingHtml(pct,numText){
 function apUpdateRing(pct){
   var el=document.getElementById('apRingFill');
   if(!el)return;
-  el.style.transition='stroke-dashoffset 1s linear';
+  if(!el._ready){
+    // first update after render — set without transition, then enable
+    el.style.transition='none';
+    el.style.strokeDashoffset=AP_C*(1-pct);
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        if(el)el.style.transition='stroke-dashoffset 1s linear';
+        el._ready=true;
+      });
+    });
+    return;
+  }
   el.style.strokeDashoffset=AP_C*(1-pct);
 }
 function apWakeLock(){
