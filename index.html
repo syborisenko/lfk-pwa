@@ -1451,7 +1451,7 @@ function apSkipPrep(){
 function apAutoStart(){
   var list=apGetExercises();if(ap.idx>=list.length)return;
   var p=list[ap.idx].params;
-  if(p.secs>0){setTimeout(function(){if(ap.active&&ap.phase==='idle')apStartTimer();},1200);}
+  if(p.secs>0)apStartTimer();
 }
 function apSkipExercise(){
   clearInterval(ap.timer);clearInterval(ap.restTimer);ap.timer=null;ap.restTimer=null;
