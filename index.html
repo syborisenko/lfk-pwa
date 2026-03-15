@@ -1252,7 +1252,7 @@ function apWakeLock(){
 }
 function apWakeUnlock(){if(ap.wakeLock){ap.wakeLock.release().catch(function(){});ap.wakeLock=null;}}
 function apEstimate(){
-  var list=apGetExercises();var sec=0;var rest=st.restTime||60;
+  var list=apGetExercises();var sec=0;var rest=15;
   for(var i=ap.idx;i<list.length;i++){
     var p=list[i].params;var key=curDay+'_'+list[i].slotIdx;var done=st.exerciseSets[key]||0;
     var rem=Math.max(0,p.sets-done);
@@ -1333,7 +1333,7 @@ function apRender(){
     }
     h+='<button class="ap-btn" onclick="apSkipPrep()">Готов</button>';
   } else if(ap.phase==='rest'){
-    var restTotal=st.restTime||60;var rpct=1-ap.elapsed/restTotal;
+    var restTotal=15;var rpct=1-ap.elapsed/restTotal;
     h+=apRingHtml(rpct,ap.elapsed);
     h+='<div class="ap-ring-lbl">Отдых · подход '+(setsDone)+'/'+p.sets+'</div>';
     var nextItem=null;
