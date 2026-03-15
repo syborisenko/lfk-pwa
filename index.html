@@ -1221,7 +1221,7 @@ var ap={active:false,idx:0,timer:null,restTimer:null,elapsed:0,phase:'idle',wake
 var apPhaseBgs={разминка:'rgba(128,128,128,.35)',активация:'rgba(96,165,250,.4)',стабилизация:'rgba(245,158,11,.35)',укрепление:'rgba(29,158,117,.37)',растяжка:'rgba(167,139,250,.38)',баланс:'rgba(59,130,246,.37)',релиз:'rgba(5,150,105,.35)',расслабление:'rgba(5,150,105,.35)'};
 var apPhaseColors={разминка:'#888',активация:'#60a5fa',стабилизация:'#f59e0b',укрепление:'var(--green)',растяжка:'#a78bfa',баланс:'#3b82f6',релиз:'#059669',расслабление:'#059669'};
 function apVibrate(ms){try{navigator.vibrate&&navigator.vibrate(ms);}catch(e){}}
-function apScrollTop(){var el=document.getElementById('autoPlayer');if(el)el.scrollTop=0;}
+function apScrollTop(){var el=document.getElementById('autoPlayer');if(el){el.scrollTop=0;el.scrollTo&&el.scrollTo(0,0);window.scrollTo(0,0);}}
 var AP_R=84,AP_C=2*Math.PI*AP_R;// ring radius and circumference
 function apRingHtml(pct,numText){
   var offset=AP_C*(1-pct);
@@ -1314,6 +1314,7 @@ function apGoBack(){
   if(ap.idx>0){ap.idx--;ap.phase='idle';ap.elapsed=0;apRender();}
 }
 function apRender(){
+  apScrollTop();
   var list=apGetExercises();
   if(ap.idx>=list.length){apFinish();return;}
   var item=list[ap.idx];var ex=item.ex;var p=item.params;
