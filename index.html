@@ -1094,12 +1094,12 @@ function renderEx(){
     var adjBtns='';
     if(params.secs>0){
       adjBtns='<span style="display:inline-flex;gap:4px;margin-left:8px;">'
-        +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:12px;" onclick="adjParam(\''+ex.id+'\',\'secs\',-5)">&#8722;</button>'
-        +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:12px;" onclick="adjParam(\''+ex.id+'\',\'secs\',5)">+</button></span>';
+        +'<button style="width:24px;height:24px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:13px;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;" onclick="adjParam(\''+ex.id+'\',\'secs\',-5)">&#8722;</button>'
+        +'<button style="width:24px;height:24px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:13px;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;" onclick="adjParam(\''+ex.id+'\',\'secs\',5)">+</button></span>';
     } else if(params.reps){
       adjBtns='<span style="display:inline-flex;gap:4px;margin-left:8px;">'
-        +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:12px;" onclick="adjParam(\''+ex.id+'\',\'reps\',-1)">&#8722;</button>'
-        +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:12px;" onclick="adjParam(\''+ex.id+'\',\'reps\',1)">+</button></span>';
+        +'<button style="width:24px;height:24px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:13px;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;" onclick="adjParam(\''+ex.id+'\',\'reps\',-1)">&#8722;</button>'
+        +'<button style="width:24px;height:24px;border-radius:50%;border:1px solid var(--border2);background:transparent;cursor:pointer;color:var(--text);font-size:13px;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;" onclick="adjParam(\''+ex.id+'\',\'reps\',1)">+</button></span>';
     }
     var metaParts=[];
     if(params.sets>1)metaParts.push(params.sets+' подхода');
@@ -1125,7 +1125,7 @@ function renderEx(){
     }
     return phaseHtml+'<div class="card" id="card_'+key+'">'
       +'<div class="c-head"><div class="ex-name">'+ex.name+'</div><div class="role-pill">'+ex.role+'</div>'
-      +'<button style="width:22px;height:22px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;flex-shrink:0;margin-top:2px;" onclick="if(confirm(\'Отключить упражнение?\'))toggleExDis(\''+ex.id+'\')">&#10005;</button></div>'
+      +'<button style="width:24px;height:24px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:13px;cursor:pointer;flex-shrink:0;margin-top:2px;display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;" onclick="if(confirm(\'Отключить упражнение?\'))toggleExDis(\''+ex.id+'\')">&#10005;</button></div>'
       +'<div class="c-meta">'+metaParts.join(' · ')+adjBtns+'</div>'
       +(ex.warn?'<div class="warn">&#9888; '+ex.warn+'</div>':'')
       +'<div class="tip-b"><div class="tip-t">'+ex.tip+'</div></div>'
