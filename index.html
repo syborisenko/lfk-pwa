@@ -1314,7 +1314,6 @@ function apGoBack(){
   if(ap.idx>0){ap.idx--;ap.phase='idle';ap.elapsed=0;apRender();}
 }
 function apRender(){
-  apScrollTop();
   var list=apGetExercises();
   if(ap.idx>=list.length){apFinish();return;}
   var item=list[ap.idx];var ex=item.ex;var p=item.params;
@@ -1392,7 +1391,7 @@ function apRender(){
     if(ex.yt)h+='<a class="yt-a" href="'+ex.yt+'" target="_blank" style="margin-top:4px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:#fff;flex-shrink:0;"><polygon points="10 8 16 12 10 16 10 8"/><rect x="2" y="4" width="20" height="16" rx="4" fill="none" stroke="white" stroke-width="1.5"/></svg>YouTube</a>';
     if(ex.warn)h+='<div class="ap-warn">\u26a0 '+ex.warn+'</div>';
   }
-  document.getElementById('apContent').innerHTML=h;
+  document.getElementById('apContent').innerHTML=h;setTimeout(apScrollTop,50);
 }
 function apStartTimer(){
   var list=apGetExercises();var p=list[ap.idx].params;
@@ -1492,7 +1491,7 @@ function apFinish(){
   h+='<div class="ap-meta">'+list.length+' упражнений</div>';
   h+='<button class="ap-btn" onclick="finishWorkout();closeAutoPlayer();">Завершить тренировку +50</button>';
   h+='<button class="ap-btn-sec" onclick="closeAutoPlayer()">Назад к списку</button>';
-  document.getElementById('apContent').innerHTML=h;beepFin();apVibrate([100,80,100,80,200]);
+  document.getElementById('apContent').innerHTML=h;setTimeout(apScrollTop,50);beepFin();apVibrate([100,80,100,80,200]);
 }
 
 // LIBRARY
